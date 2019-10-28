@@ -1,0 +1,75 @@
+// Angular Material custom theme
+// The mixins below must be included once so we separated them from the variables
+@import "~@angular/material/theming";
+
+$material-design-icons-font-directory-path: "~material-design-icons-iconfont/dist/fonts/";
+/*
+ * Demo palette
+ */
+$mat-demo: (
+  50 : #e5eaef,
+  100 : #bfcbd8,
+  200 : #94a9be,
+  300 : #6986a4,
+  400 : #486c91,
+  500 : #28527d,
+  600 : #244b75,
+  700 : #1e416a,
+  800 : #183860,
+  900 : #0f284d,
+  A100 : #85b2ff,
+  A200 : #5291ff,
+  A400 : #1f71ff,
+  A700 : #0660ff,
+  contrast: (
+    50: $dark-primary-text,
+    100: $dark-primary-text,
+    200: $dark-primary-text,
+    300: $dark-primary-text,
+    400: $light-primary-text,
+    500: $light-primary-text,
+    600: $light-primary-text,
+    700: $light-primary-text,
+    800: $light-primary-text,
+    900: $light-primary-text,
+    A100: $dark-primary-text,
+    A200: $dark-primary-text,
+    A400: $light-primary-text,
+    A700: $light-primary-text
+  )
+);
+
+ $mat-bloomen-demo-theme-background: (
+   status-bar: white,
+   app-bar:    white,
+   background: #e5eaef,
+   hover:      rgba(white, 0.04), // TODO(kara): check style with Material Design UX
+   card:       white,
+   dialog:     white,
+   disabled-button: rgba(black, 0.12),
+   raised-button: map-get($mat-grey, 800),
+   focused-button: $light-focused,
+   selected-button: map_get($mat-grey, 900),
+   selected-disabled-button: map_get($mat-grey, 800),
+   disabled-button-toggle: black,
+   unselected-chip: map_get($mat-grey, 700),
+   disabled-list-option: black
+ );
+
+// $mat-bloomen-demo-theme-foreground: (
+//   base:              black,
+//   divider:           $light-dividers,
+//   dividers:          $light-dividers,
+//   disabled:          $light-disabled-text,
+//   disabled-button:   rgba(black, 0.3),
+//   disabled-text:     $light-disabled-text,
+//   elevation:         black,
+//   hint-text:         $light-disabled-text,
+//   secondary-text:    $light-secondary-text,
+//   icon:              black,
+//   icons:             black,
+//   text:              black,
+//   slider-min:        black,
+//   slider-off:        rgba(black, 0.3),
+//   slider-off-active: rgba(black, 0.3)
+// );

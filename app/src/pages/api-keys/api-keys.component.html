@@ -1,0 +1,32 @@
+<mat-toolbar color="primary">
+    <mat-toolbar-row>
+        <mat-form-field>
+            <input #search placeholder="Search by Api Key" type="text" matInput>
+        </mat-form-field>
+    </mat-toolbar-row>
+</mat-toolbar>
+
+<div fxLayout="row wrap" class="card-wrapper">
+    <div fxFlex="100%" fxFlex.gt-md="50%" *ngFor="let item of apiKeyList$ | async; let i = index">
+        <mat-card>
+            <mat-card-header fxLayoutAlign="space-between">
+                <mat-card-subtitle>
+                    {{item.name}}
+                </mat-card-subtitle>
+                <mat-card-title>
+                    {{item.id}}
+                </mat-card-title>
+                <div>
+                    <mat-icon (click)="editApiKey(item)">edit</mat-icon>
+                    <mat-icon (click)="deleteApiKey(item)">delete</mat-icon>
+                    <mat-icon (click)="paymentApiKey(item)">payment</mat-icon>
+                </div>
+            </mat-card-header>
+        </mat-card>
+    </div>
+</div>
+
+
+<button class="new-item" mat-fab (click)='addApiKey()'>
+    <mat-icon>add</mat-icon>
+</button>

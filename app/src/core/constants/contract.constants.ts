@@ -1,0 +1,4 @@
+
+export const CONTRACT_CONSTANTS = {
+    CONTRACT_STATE: 'CONTRACT_STATE'
+};

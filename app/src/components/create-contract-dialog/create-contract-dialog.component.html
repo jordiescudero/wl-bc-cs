@@ -1,0 +1,23 @@
+<h1 mat-dialog-title>Create a contract</h1>
+<div mat-dialog-content>
+    <form [formGroup]="contractForm" fxLayout="column">
+        <mat-form-field>
+            <input matInput placeholder="Name" formControlName="name" required>
+            <mat-error *ngIf="contractForm.get('name').invalid">{{getErrorMessage('name')}}</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Description" formControlName="description" required>
+            <mat-error *ngIf="contractForm.get('description').invalid">{{getErrorMessage('description')}}</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Contract address" formControlName="address" required>
+            <mat-error *ngIf="contractForm.get('address').invalid">{{getErrorMessage('address')}}</mat-error>
+        </mat-form-field>
+        <mat-checkbox labelPosition="before" formControlName="public">It is a public contract</mat-checkbox>
+    </form>
+</div>
+<div mat-dialog-actions>
+    <button mat-button [mat-dialog-close]>{{'No Thanks' | translate}}</button>
+    <button mat-button [disabled]="!contractForm.valid"
+        [mat-dialog-close]="contractForm.value">{{'Ok' | translate}}</button>
+</div>

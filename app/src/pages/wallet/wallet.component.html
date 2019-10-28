@@ -1,0 +1,15 @@
+<div fxFlex fxFlexFill fxLayout="row wrap" class="wallet-wrapper" fxLayoutAlign="space-around stretch">
+    <div fxFlex="50" >
+        <h1>Lorem ipsum dolor</h1>
+        <h3>Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.</h3>
+        <p>Fusce volutpat nulla sed velit dictum, quis euismod felis euismod. In fermentum metus consectetur semper rhoncus. Interdum et malesuada fames ac ante ipsum primis in faucibus. Quisque molestie at massa eget interdum. Nulla faucibus suscipit justo a bibendum.</p>
+        <div>
+            <p> CURRENT ADDRESS {{address$|async}}</p>
+            <button *ngIf="!wallet.active" mat-button (click)='activate()'>ACTIVATE</button> 
+            <button *ngIf="wallet.active" mat-button (click)='deactivate()'>DEACTIVATE</button> 
+            <button *ngIf="wallet.active" mat-button (click)="testMeta()">TEST TX</button>
+            <h3>{{wallet.active}}</h3>
+            <p *ngFor="let item of wallet.log">{{item}}</p>
+        </div>
+    </div>
+</div>

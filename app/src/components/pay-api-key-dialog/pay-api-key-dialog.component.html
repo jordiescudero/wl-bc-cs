@@ -1,0 +1,15 @@
+<h1 mat-dialog-title>Buy Time for Api Key</h1>
+<div mat-dialog-content fxLayout="column">
+    &nbsp;
+    <div ngxClipboard [cbContent]="payQR" >
+        <qrcode *ngIf="!walletActive" style="padding-bottom: 10px;padding-top: 10px;" [qrdata]="payQR" [size]="150" [level]="'Q'"></qrcode>
+    </div>
+    &nbsp;
+    <mat-slider class="slider-wrapper" [max]="99" min="1" [displayWith]="formatLabel" thumbLabel
+        [(ngModel)]="value" (ngModelChange)="onChange($event)"></mat-slider>
+</div>
+<div mat-dialog-actions>
+    <button mat-button  [mat-dialog-close]>{{'No Thanks' | translate}}</button>
+    <button mat-button *ngIf="!walletActive" [mat-dialog-close]='undefinded' >{{'Done' | translate}}</button>
+    <button mat-button *ngIf="walletActive" [mat-dialog-close]="value">{{'Pay' | translate}}</button>
+</div>

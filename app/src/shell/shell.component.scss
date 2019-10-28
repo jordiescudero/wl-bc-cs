@@ -1,0 +1,29 @@
+@import "~scss/variables.scss";
+
+:host {
+  height: 100%;
+}
+
+.mat-toolbar {
+  &.app-bar {
+    height: 80px;
+    position: fixed;
+  }
+
+  &.browser-menu {
+    width: calc(100vw - 288px);
+  }
+
+  img {
+    height: 80px;
+  }
+}
+
+.mat-sidenav {
+  min-width: 289px;
+  max-width: 28%;
+}
+
+.back-button-wrapper {
+  color: black;
+}

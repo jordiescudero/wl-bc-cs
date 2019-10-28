@@ -1,0 +1,17 @@
+{
+	"Hi": "Hi EN",
+	"welcome to Mars": "welcome to Mars EN",
+	"Welcome to Mars, the red planet.": "Welcome to Mars, the red planet. EN",
+	"pepe": "pepeEN",
+	"text to test": "text to test EN",
+	"%d cat": {
+		"one": "%d cat EN",
+		"other": "%d cats EN"
+	},
+	"email.register.subject": "EN Register Subjectt",
+	"hi": "hi",
+	"Password": "Password",
+	"Confirm Password": "Confirm Password",
+	"Length": "Length",
+	"CHANGE": "CHANGE"
+}

@@ -1,0 +1,24 @@
+<div class="reset-wrapper" fxLayout="column" fxLayoutAlign="center center">
+    <div class="reset-box" fxLayout="column" fxLayoutAlign="space-around center">
+        <div class="brand"></div>
+        <form *ngIf="!successfulRequest" [formGroup]="resetForm"  (ngSubmit)="reset()">
+          <div fxFlex fxLayout="column" fxLayoutAlign="space-around">
+            <mat-form-field fxFlex="45">
+                <mat-label>{{ 'reset_form.label.email' | translate }}</mat-label>
+                <input type="email" matInput placeholder="{{ 'reset_form.placeholder.email' | translate }}" formControlName="email">
+            </mat-form-field>
+            
+            <button class="button" mat-button [disabled]="!resetForm.valid"
+            color="accent">{{ 'common.reset' | translate | uppercase }}</button>
+          </div>
+        </form>
+        <div *ngIf="successfulRequest" > {{ 'reset.ok' | translate }}</div>
+        <div  fxLayout="row" fxLayoutAlign="space-around center" >
+          <div  fxLayout="column" fxLayoutAlign="center center" routerLink="/login">
+              <mat-icon>keyboard_return</mat-icon>
+              <div>{{ 'login.back' | translate | uppercase }}</div>
+          </div>
+       </div>
+    </div>
+  </div>
+

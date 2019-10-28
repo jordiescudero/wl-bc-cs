@@ -1,0 +1,40 @@
+<h1 mat-dialog-title>Create new Api Key</h1>
+<div mat-dialog-content>
+    <form [formGroup]="apiKeyForm" fxLayout="column">
+        <mat-form-field >
+            <input matInput placeholder="Name" formControlName="name" required>
+            <mat-error *ngIf="apiKeyForm.get('name').invalid">{{getErrorMessage('name')}}</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+            <input matInput placeholder="Description" formControlName="description" required>
+            <mat-error *ngIf="apiKeyForm.get('description').invalid">{{getErrorMessage('description')}}</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Choose a role</mat-label>
+            <mat-select formControlName="role" required>
+                <mat-option value="developer">Developer</mat-option>
+                <mat-option value="user">User</mat-option>
+            </mat-select>
+            <mat-error *ngIf="apiKeyForm.get('role').invalid">{{getErrorMessage('role')}}</mat-error>
+        </mat-form-field>
+        <mat-form-field floatLabel="always">
+            <input #search matInput placeholder="Contracts" [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onOptionSelected($event)">
+                <mat-option *ngFor="let contract of contracts$ | async" [value]="contract">
+                    <span>{{contract.name}}</span>
+                </mat-option>
+            </mat-autocomplete>
+        </mat-form-field>
+        <mat-chip-list formArrayName="contracts">
+            <mat-chip *ngFor="let formContract of apiKeyForm.get('contracts').controls">
+                {{formContract.value.name}}
+                <mat-icon matChipRemove (click)="onRemoveContract(formContract.value)">cancel</mat-icon>
+            </mat-chip>
+        </mat-chip-list>
+    </form>
+</div>
+<div mat-dialog-actions>
+    <button mat-button [mat-dialog-close]>{{'No Thanks' | translate}}</button>
+    <button mat-button [disabled]="!apiKeyForm.valid"
+        [mat-dialog-close]="apiKeyForm.value">{{'Ok' | translate}}</button>
+</div>

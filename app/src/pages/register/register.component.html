@@ -1,0 +1,31 @@
+<div class="register-wrapper" fxLayout="column" fxLayoutAlign="center center">
+    <div class="register-box" fxLayout="column" fxLayoutAlign="space-around center">
+        <div class="brand"></div>
+        <form *ngIf="!successfulRequest" [formGroup]="registerForm" (ngSubmit)="register()">
+          <div fxFlex fxLayout="column" fxLayoutAlign="space-around">
+            <mat-form-field fxFlex="45">
+                <mat-label>{{ 'register_form.label.firstName' | translate }}</mat-label>
+                <input matInput placeholder="{{ 'register_form.placeholder.firstName' | translate }}" formControlName="firstName">
+            </mat-form-field>
+            <mat-form-field fxFlex="45">
+                <mat-label>{{ 'register_form.label.lastName' | translate }}</mat-label>
+                <input matInput placeholder="{{ 'register_form.placeholder.lastName' | translate }}" formControlName="lastName">
+            </mat-form-field>
+            <mat-form-field fxFlex="45">
+                <mat-label>{{ 'register_form.label.email' | translate }}</mat-label>
+                <input type="email" matInput placeholder="{{ 'register_form.placeholder.email' | translate }}" formControlName="email">
+            </mat-form-field>
+            <button class="button" mat-button [disabled]="!registerForm.valid"
+            color="accent">{{ 'common.register' | translate | uppercase }}</button>
+          </div>
+        </form>
+        <div *ngIf="successfulRequest" > {{ 'register.ok' | translate }}</div>
+        <div  fxLayout="row" fxLayoutAlign="space-around center" >
+          <div fxLayout="column" fxLayoutAlign="center center" routerLink="/login">
+            <mat-icon>keyboard_return</mat-icon>
+            <div>{{ 'login.back' | translate | uppercase }}</div>
+          </div>
+       </div>
+    </div>
+  </div>
+

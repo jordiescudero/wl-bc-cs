@@ -1,0 +1,4 @@
+
+export const USER_SESSION_CONSTANTS = {
+    USER_SESSION: 'USER_SESSION'
+};
