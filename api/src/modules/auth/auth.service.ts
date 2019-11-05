@@ -209,17 +209,18 @@ export class AuthService {
 
     const expiresInSeconds = this.configService.get('ONE_TIME_TOKEN_EXPIRATION_TIME');
 
-    const oneTimeToken = this.oneTimeTokenRepository.create( {
-      expireAt: new Date( (new Date()).getTime() + (expiresInSeconds * 1000)),
-      email: user.email,
-      userId: user.id.toString(),
-      firstName: user.firstName,
-      lastName: user.lastName,
-      lang,
-     });
-    await this.oneTimeTokenRepository.save(oneTimeToken);
+    // const oneTimeToken = this.oneTimeTokenRepository.create( {
+    //   expireAt: new Date( (new Date()).getTime() + (expiresInSeconds * 1000)),
+    //   email: user.email,
+    //   userId: user.id.toString(),
+    //   firstName: user.firstName,
+    //   lastName: user.lastName,
+    //   lang,
+    //  });
+    // await this.oneTimeTokenRepository.save(oneTimeToken);
 
-    return oneTimeToken;
+    // return oneTimeToken;
+    return null;
   }
 
   public async getOneTimeToken(oneTimeTokenId: string) {

@@ -24,8 +24,8 @@ export class ApiKeysService {
     private readonly configService: ConfigService,
   ) {
 
-    this.web3 = new Web3(new Web3.providers.HttpProvider(this.configService.get('ALASTRIA_RPC_URL')));
-    this.apiKeysContract = new this.web3.eth.Contract(JSON.abi, JSON.networks[this.configService.get('ALASTRIA_NETWORK')].address);
+    // this.web3 = new Web3(new Web3.providers.HttpProvider(this.configService.get('ALASTRIA_RPC_URL')));
+    // this.apiKeysContract = new this.web3.eth.Contract(JSON.abi, JSON.networks[this.configService.get('ALASTRIA_NETWORK')].address);
   }
 
   async create(owner: string, createApiKeyDto: CreateApiKeyDto): Promise<ResponseApiKeyDto> {

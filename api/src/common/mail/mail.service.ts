@@ -18,14 +18,14 @@ export class MailService {
       ) {
 
         this.mailer = nodemailer.createTransport({
-            host: this.configService.get('MAIL_HOST'),
-            port: this.configService.get('MAIL_PORT'),
-            secure: false,
-            auth: {
-                user: this.configService.get('MAIL_USER'),
-                pass: this.configService.get('MAIL_PASSWORD'),
-            },
-            tls: { rejectUnauthorized: false },
+            // host: this.configService.get('MAIL_HOST'),
+            // port: this.configService.get('MAIL_PORT'),
+            // secure: false,
+            // auth: {
+            //     user: this.configService.get('MAIL_USER'),
+            //     pass: this.configService.get('MAIL_PASSWORD'),
+            // },
+            // tls: { rejectUnauthorized: false },
         });
         const viewEngineCfg = {
             extname: '.hbs',
