@@ -1,73 +1,224 @@
-import { Controller, Get, Render, Post, HttpStatus, Body, Req, HttpException, Res, Query, Delete, Put, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Render,
+  Post,
+  HttpStatus,
+  Body,
+  Req,
+  HttpException,
+  Res,
+  Query,
+  Delete,
+  Put,
+  Param,
+  Logger,
+} from '@nestjs/common';
 // import { Request, Response } from 'express';
 import { CompanionDBService } from './companion-db.service';
-import { ApiBearerAuth, ApiResponse, ApiConsumes, ApiProduces, ApiOkResponse } from '@nestjs/swagger';
-// import { Roles } from '@common/decorators/roles.decorator';
-// import { User } from '@common/decorators/user.decorator';
-import { SensiDataDto } from './model/dto/sensiData.dto';
-import { ResponseTokenDto } from './model/dto/response-token.dto';
+import {
+  ApiBearerAuth,
+  ApiResponse,
+  ApiConsumes,
+  ApiProduces,
+  ApiOkResponse,
+} from '@nestjs/swagger';
+import { ReaderDto } from './model/dto/reader.dto';
+import { DataDto } from './model/dto/data.dto';
+import { MnemonicDto } from './model/dto/mnemonic.dto';
+import { DataListDto } from './model/dto/data-list.dto';
+import { User } from '@common/decorators/user.decorator';
+import { Roles } from '@common/decorators/roles.decorator';
+import { Data } from './model/entity/data.entity';
 // import * as i18n from 'i18n';
 
 @Controller('companionDB')
 export class CompanionDBController {
+  private log = new Logger('CompanionDBController', true);
 
-  constructor(
-    private readonly companionDBService: CompanionDBService,
-    ) {}
+  constructor(private readonly companionDBService: CompanionDBService) {}
 
-// MAYBE WE SHOULD USE IT IN THE FUTURE
-  //@ApiBearerAuth()
-  //@Roles('user')
-  //@ApiResponse({status: HttpStatus.ACCEPTED, description: 'Successful Registration', })
-  //@ApiOkResponse({ type: SensiDataDto})
+  //FIXME: When registered, we also have to enroll them automatically to the CryptoModule
+  // @Post('enroll')
+  // @Roles('user')
+  // @ApiBearerAuth()
+  // async enroll(
+  //   @User('id') userId: string,
+  //   @Body() mnemonic: MnemonicDto,
+  // ): Promise<any> {
+  //   await this.companionDBService.enroll(userId, mnemonic.mnemonic);
+  //   //FIXME: Think about what to return.
+  //   return;
+  // }
 
-
-  @Get(':id')
-  @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
-  findOne(@Param('id') id: string): Promise<any> {
-    return null;
+  /**
+   * 
+   * @param userId 
+   * @param mnemonic 
+   */
+  @Post('enrol')
+  @Roles('user')
+  @ApiBearerAuth()
+  async enrol(
+    @User('id') userId: string,
+    @Body('mnemonic') mnemonic: string
+  ): Promise<any> {
+    return await this.companionDBService.enroll(userId, mnemonic);
   }
 
-  @Get()
-  @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
-  find(@Param('id') idBulck: string[], @Body() payload: SensiDataDto[]) {
-    return null;
+  /**
+   * 
+   * @param userId 
+   */
+  @Delete('disenrol')
+  @Roles('user')
+  @ApiBearerAuth()
+  async disenroll(
+    @User('id') userId: string,
+  ): Promise<any> {
+    return await this.companionDBService.disenroll(userId);
   }
 
-  @Post()
-  @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
-  insert(@Body() sensiData: SensiDataDto): Promise<ResponseTokenDto> {
-    return null;
+    /**
+   * 
+   * @param userId 
+   * @param hash 
+   * @param readerDto 
+   */
+  @Post('authorise/:hash')
+  @Roles('user')
+  @ApiBearerAuth()
+  async authorise(
+    @User('id') userId: string,
+    @Param('hash') hash: string,
+    @Body() readerDto: ReaderDto,
+  ) {
+    return await this.companionDBService.authorise(hash, readerDto.authHash);
   }
 
-  @Post('bulk_insert')
-  @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
-  bulk_insert(@Body() sensiDataBulck: SensiDataDto[]): Promise<ResponseTokenDto> {
-    return null;
+  /**
+   * 
+   * @param userId 
+   * @param hash 
+   * @param readerDto 
+   */
+  @Delete('deauthorise/:hash')
+  @Roles('user')
+  @ApiBearerAuth()
+  async deauthorise(
+    @User('id') userId: string,
+    @Param('hash') hash: string,
+    @Body() readerDto: ReaderDto,
+  ) {
+    return await this.companionDBService.deauthorise(hash, readerDto.authHash);
   }
 
-  @Put(':id')
-  @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
-  update(@Param('id') id: string, @Body() payload: SensiDataDto): Promise<SensiDataDto> {
-    return null;
+  /**
+   * 
+   * @param userId 
+   * @param hash 
+   * @param readerDto 
+   */
+  @Post('requestAuthorisation/:hash')
+  @Roles('user')
+  @ApiBearerAuth()
+  async requestAuthorisation(
+    @User('id') userId: string,
+    @Param('hash') hash: string,
+    @Body() readerDto: ReaderDto,
+  ) {
+    return await this.companionDBService.requestAuthorisation(hash, readerDto.authHash,
+    );
   }
 
-  @Put()
-  @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
-  bulk_update(@Param('id') id: string[], @Body() payload: SensiDataDto[]) {
-    return null;
+  /**
+   * 
+   * @param userId 
+   * @param dataId 
+   */
+  @Get('read/:dataId')
+  @Roles('user')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: DataDto })
+  async read(
+    @User('id') userId: string,
+    @Param('dataId') dataId: string,
+  ): Promise<DataDto> {
+    return await this.companionDBService.read(dataId);
   }
 
-  @Delete(':id')
-  @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
-  delete(@Param('id') id: string ): Promise<ResponseTokenDto> {
-    return null;
+  /**
+   * 
+   * @param userId 
+   * @param dataIdList 
+   */
+  @Get('read/bulk')
+  @Roles('user')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: DataListDto })
+  async readBulk(
+    @User('id') userId: string,
+    @Query() dataIdList: string[],
+  ): Promise<DataListDto> {
+    return await this.companionDBService.readBulk(dataIdList);
   }
 
-  @Delete('bulk_delete')
-  @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
-  bulk_delete(@Param('id') id: string[] ): Promise<ResponseTokenDto> {
-    return null;
-  } 
+  /**
+   * 
+   * @param userId 
+   * @param data 
+   */
+  @Post('save')
+  @Roles('user')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: Object })
+  async save(@User('id') userId: string, @Body() data: Object): Promise<Data> {
+    return await this.companionDBService.save(userId, data);
+  }
 
+  /**
+   * 
+   * @param userId 
+   * @param dataBulkList 
+   */
+  @Post('save/bulk')
+  @Roles('user')
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: DataListDto })
+  async saveBulk(
+    @User('id') userId: string,
+    @Body() dataBulkList: DataListDto,
+  ): Promise<DataListDto> {
+    return await this.companionDBService.saveBulk(dataBulkList);
+  }
+
+  /**
+   * 
+   * @param userId 
+   * @param dataId 
+   */
+  @Delete('delete/:dataId')
+  @Roles('user')
+  @ApiBearerAuth()
+  async delete(
+    @User('id') userId: string,
+    @Param('dataId') dataId: string,
+  ): Promise<any> {
+    return await this.companionDBService.delete(dataId);
+  }
+
+  /**
+   * 
+   * @param userId 
+   * @param dataIdBulk 
+   */
+  @Delete('delete/bulk')
+  @Roles('user')
+  @ApiBearerAuth()
+  async deleteBulk(
+    @User('id') userId: string,
+    @Body() dataIdBulk: string[],
+  ): Promise<any> {
+    return await this.companionDBService.deleteBulk(dataIdBulk);
+  }
 }

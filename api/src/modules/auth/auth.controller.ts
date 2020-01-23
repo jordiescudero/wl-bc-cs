@@ -61,6 +61,8 @@ export class AuthController {
     description: 'Successful Registration',
   })
   async register(@Req() req: Request, @Res() res: Response, @Body() payload: RegisterUserDto) {
+        
+    //FIXME: When registered, we also have to enroll them automatically to the CryptoModule
 
     const userDb = await this.userService.getByEmail(payload.email);
     if (userDb) {
@@ -87,7 +89,7 @@ export class AuthController {
            req.protocol + '://' + req.get('host') + '/api/auth/password/reset' + '?otk=' + oneTimeToken.id,
         },
       };
-
+    console.info(msg);
     this.mailService.sendMail(msg);
     res.status(HttpStatus.ACCEPTED).send();
   }

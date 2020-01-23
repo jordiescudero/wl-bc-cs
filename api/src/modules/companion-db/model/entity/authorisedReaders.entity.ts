@@ -1,10 +1,10 @@
-import { Exclude } from 'class-transformer';
 import { Entity, Column, ObjectIdColumn } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 @Entity({
-  name: 'key_pairs',
+  name: 'authorised_readers',
 })
-export class KeyPair {
+export class AuthorisedReaders {
 
   @ObjectIdColumn()
   @Exclude()
@@ -14,6 +14,6 @@ export class KeyPair {
   hash!: string;
 
   @Column()
-  privateKey!: string;
+  reader!: string;
 
 }

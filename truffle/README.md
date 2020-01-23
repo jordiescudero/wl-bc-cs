@@ -1,6 +1,6 @@
 [![nps friendly](https://img.shields.io/badge/nps-friendly-blue.svg?style=flat-square)](https://github.com/kentcdodds/nps)
 
-# bloomen wallet truffle
+# MSec wallet truffle
 
 
 # Getting started

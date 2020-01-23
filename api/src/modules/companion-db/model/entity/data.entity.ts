@@ -2,18 +2,21 @@ import { Entity, Column, ObjectIdColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 @Entity({
-  name: 'authorized_companies',
+  name: 'data',
 })
-export class AuthorizedCompanies {
+export class Data {
 
   @ObjectIdColumn()
   @Exclude()
   id!: string;
 
   @Column()
-  hash!: string;
+  hashOwner!: string;
 
   @Column()
-  company!: string;
+  hashData!: string;
+
+  @Column()
+  data!: string;
 
 }

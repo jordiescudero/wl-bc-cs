@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { KeyPair } from './model/entity/keyPair.entity';
-import { AuthorizedCompanies } from './model/entity/authorizedCompanies.entity';
-import * as crypto from 'crypto';
 import { MongoRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ResponseCryptoDto } from './model/dto/response-crypto.dto';
+import * as bip39 from 'bip39';
+import EthCrypto from 'eth-crypto';
 
 @Injectable()
 export class EncryptDecryptService {
@@ -13,71 +13,65 @@ export class EncryptDecryptService {
     constructor(
         @InjectRepository(KeyPair)
         private readonly keyPairRepository: MongoRepository<KeyPair>,
-        @InjectRepository(AuthorizedCompanies)
-        private readonly authCompanyRepository: MongoRepository<AuthorizedCompanies>,
     ) { }
 
-    async enroll(hash: string) {
-        // Create keyPair and push to the database.
-        crypto.generateKeyPair('rsa', {
-            modulusLength: 4096,
-            publicKeyEncoding: {
-                type: 'spki',
-                format: 'pem',
-            },
-            privateKeyEncoding: {
-                type: 'pkcs8',
-                format: 'pem',
-                cipher: 'aes-256-cbc',
-                passphrase: '', // FIXME: It works without passphrase. Should we add one?
-            },
-        }, (err, publicKey, privateKey) => {
-            if (!err) {
-                // Handle errors and use the generated key pair.
-                const kp = this.keyPairRepository.create({ hash, privateKey, publicKey });
-                this.keyPairRepository.save(kp);
-            } else {
-                throw err;
-            }
-        });
+    /**
+     * This function creates a keyPair for the defined hash. 
+     * It returns true if the creation was successfull and false if not.
+     * 
+     * @param hash 
+     * @param mnemonic 
+     */
+    async enroll(hash: string, mnemonic: string) {
+        //If already enrolled, return
+        const keyPair = await this.keyPairRepository.findOne({hash});
+        if(keyPair!=null) {
+            return "Already enrolled";
+        }
 
+        //Check if a mnemonic is sent, if not, create one.
+        if(mnemonic == null) {
+            mnemonic = bip39.generateMnemonic(256);
+        }
+        
+        //Check if the menmonic is valid, if not return.
+        if(!bip39.validateMnemonic(mnemonic)) {
+            return "Invalid mnemonic";
+        }
+        
+        //Create the key pair. NOTE: The entropy is dobled to fullfill the needs from the EthCrypto specifications.
+        const entropy = Buffer.from(bip39.mnemonicToEntropy(mnemonic)+bip39.mnemonicToEntropy(mnemonic)); // must contain at least 128 chars
+        const identity = EthCrypto.createIdentity(entropy);
+        const privateKey = identity.privateKey;
+
+        //Save the key pair.
+        const kp = this.keyPairRepository.create({ hash, privateKey });
+        this.keyPairRepository.save(kp);
+
+        //Return the mnemonic in order to let the user save it.
+        return mnemonic;
     }
 
+  /**
+   * This function deletes a keyPair for the defined hash.
+   * It returns true if the operation was sucessfull or false if not.
+   * 
+   * @param hash 
+   */
     async disenroll(hash: string) {
-        // Delete all authorisations of the database for this hash.
-        this.deauthorizeAll(hash);
-
-        // Delete the keyPair of the database.
-        this.keyPairRepository.deleteOne({hash});
+        return this.keyPairRepository.deleteOne({hash});
     }
 
-    async authorize(hash: string, authHash: string) {
-        // Check if the hash has an enrollement and check if the authorization already exists.
-        // if (this.authCompanyRepository.findOne({ hash, company: authHash })) {
-        //     return;
-        // }
-
-        // Create an authorization.
-        // FIXME: Does not takes company into account.
-        const authCompany = this.authCompanyRepository.create({ hash, company: authHash });
-
-        // Save the authorization.
-        this.authCompanyRepository.save(authCompany);
-
-    }
-
-    async deauthorize(hash: string, authHash: string) {
-        // Delete one authorization.
-        this.authCompanyRepository.deleteOne({hash, company: authHash});
-
-    }
-
-    async deauthorizeAll(hash: string) {
-        // Delete all authorization.
-        this.authCompanyRepository.deleteMany({hash});
-
-    }
-
+    /**
+     * FIXME: Only the user can encrypt data.
+     * This function encrypts the data given with the keyPair of the defined hash. 
+     * Returns:
+     * - Encrypted data:  if enrolled member
+     * - Same data:       if NOT enrolled member
+     * 
+     * @param hash 
+     * @param text 
+     */
     async encrypt(hash: string, text: string): Promise<ResponseCryptoDto> {
         // Get the "keypair" for the given hash.
         const keyPair = await this.keyPairRepository.findOne({hash});
@@ -86,32 +80,40 @@ export class EncryptDecryptService {
         }
 
         // Encrypt the "text" with the "private key"
-        // const keyObject = crypto.createPrivateKey({key: keyPair.privateKey, passphrase: this.passphrase});
-        const encryptedText = crypto.privateEncrypt(keyPair.privateKey, Buffer.from(text));
-
+        const encrypted = await EthCrypto.encryptWithPublicKey(
+            EthCrypto.publicKeyByPrivateKey(keyPair.privateKey), // publicKey
+            text // message
+        );
+        const encryptedString = EthCrypto.cipher.stringify(encrypted);
+        
         // Return the "text" encrypted
-        return {text: encryptedText.toString('hex')};
+        return {text: encryptedString};
     }
 
-    async decrypt(hash: string, authHash: string, text: string): Promise<ResponseCryptoDto> {
-        let authorization = false;
-        // Check if the "hash" is from a "user" or an "authorized".
-        // Get the "keypair" for the "user"
+    /**
+     * This function decrypts the data given with the keyPair of the defined hash.
+     * Returns:
+     * - Decrypted data:  if enrolled member
+     * - Same data:       if NOT enrolled member
+     * 
+     * @param hash 
+     * @param text 
+     */
+    async decrypt(hash: string, text: string): Promise<ResponseCryptoDto> {
+        // Get the "keypair" for the given hash.
         const keyPair = await this.keyPairRepository.findOne({hash});
-        // if (keyPair || this.authCompanyRepository.findOne({hash, company: authHash})) {
-        //     authorization = true;
-        // }
+        if (!keyPair) {
+            return {text};
+        }
 
-        // // IF NOT authoriezed, return "text" as is.
-        // if (!authorization) {
-        //     return {text};
-        // }
-
-        // Decrypt the "text" with the "public key"
-        const decryptedText = crypto.publicDecrypt(keyPair.publicKey, Buffer.from(text, 'hex'));
+        //Decrypt the "text" with the "private key"
+        const message = await EthCrypto.decryptWithPrivateKey(
+            keyPair.privateKey, // privateKey
+            EthCrypto.cipher.parse(text) // encrypted-data
+        );
 
         // Return the "text" decrypted.
-        return {text: decryptedText.toString()};
+        return {text: message};
     }
 
 }

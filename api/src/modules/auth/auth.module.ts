@@ -38,6 +38,6 @@ import { MailModule } from '@common/mail/mail.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, UsersService],
-  exports: [PassportModule],
+  exports: [PassportModule, UsersService],
 })
 export class AuthModule {}

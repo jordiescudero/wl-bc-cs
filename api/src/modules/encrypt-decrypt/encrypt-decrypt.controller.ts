@@ -1,57 +1,81 @@
-import { Controller, Get, Post, Body, Delete, Param, Query } from '@nestjs/common';
-import { KeyPair } from './model/entity/keyPair.entity';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Delete,
+  Param,
+  Query,
+  Scope,
+} from '@nestjs/common';
 import { EncryptDecryptService } from './encrypt-decrypt.service';
-import { CompanyDto } from './model/dto/company.dto';
 import { RequestCryptoDto } from './model/dto/request-crypto.dto';
 import { ResponseCryptoDto } from './model/dto/response-crypto.dto';
 
-@Controller('crypto')
+@Controller({
+  path: 'crypto',
+  scope: Scope.DEFAULT,
+})
 export class EncryptDecryptController {
-    constructor(private readonly edService: EncryptDecryptService) {}
+  constructor(private readonly edService: EncryptDecryptService) {}
 
-    @Post('enroll/:hash')
-    async enroll(@Param('hash') hash: string) {
-        // This function will create a keyPair for the defined hash.
-        // It will return true or false according if the creation was successfull or not.
-        return await this.edService.enroll(hash);
-    }
+  /**
+   * This function creates a keyPair for the defined hash. 
+   * It returns true if the creation was successfull and false if not.
+   * 
+   * @param hash 
+   * @param mnemonic 
+   */
+  @Post('enrol/:hash')
+  async enrol(
+    @Param('hash') hash: string,
+    @Body('mnemonic') mnemonic: string,
+  ) {
+    return await this.edService.enroll(hash, mnemonic);
+  }
 
-    @Delete('disenroll/:hash')
-    async disenroll(@Param('hash') hash: string) {
-        // This function will delete a keyPair for the defined hash.
-        // This function will delete all the authorizations attached to the given hash.
-        // It will return true or false according if the operation was sucessfull or not.
-        return await this.edService.disenroll(hash);
-    }
+  /**
+   * This function deletes a keyPair for the defined hash.
+   * It returns true if the operation was sucessfull or false if not.
+   * 
+   * @param hash 
+   */
+  @Delete('disenrol/:hash')
+  async disenrol(@Param('hash') hash: string) {
+    return await this.edService.disenroll(hash);
+  }
 
-    @Post('authorize/:hash')
-    async authorize(@Param('hash') hash: string, @Body() companyDto: CompanyDto) {
-        // This funciton will create an authorization for this hash.
-        // It will return true or false according if the operation was sucessfull or not.
-        return await this.edService.authorize(hash, companyDto.authHash);
-    }
+  /**
+   * This function encrypts the data given with the keyPair of the defined hash. 
+   * Returns:
+   * - Encrypted data:  if enrolled member
+   * - Same data:       if NOT enrolled member
+   * 
+   * @param hash 
+   * @param text 
+   */
+  @Get('encrypt/:hash')
+  async encrypt(
+    @Param('hash') hash: string,
+    @Query('text') text: string,
+  ): Promise<ResponseCryptoDto> {
+    return await this.edService.encrypt(hash, text);
+  }
 
-    @Delete('deauthorize/:hash')
-    async deauthorize(@Param('hash') hash: string, @Body() companyDto: CompanyDto) {
-        // This funciton will delete an authorization for this hash.
-        // It will return true or false according if the operation was sucessfull or not.
-        return await this.edService.deauthorize(hash, companyDto.authHash);
-    }
-
-    @Get('encrypt/:hash')
-    async encrypt(@Param('hash') hash: string, @Query('text') text: string): Promise<ResponseCryptoDto> {
-        // FIXME: Only the user can encrypt data.
-
-        // IF enrolled member -> return encrypted data.
-        // If NOT enrolled member -> return same data.
-        return await this.edService.encrypt(hash, text);
-    }
-
-    @Get('decrypt/:hash')
-    async decrypt(@Param('hash') hash: string, @Query('authHash') authHash: string, @Query('text') text: string): Promise<ResponseCryptoDto> {
-        // IF enrolled member -> return decrypted data.
-        // If NOT enrolled member -> return same data.
-        return await this.edService.decrypt(hash, authHash, text);
-    }
-
+  /**
+   * This function decrypts the data given with the keyPair of the defined hash.
+   * Returns:
+   * - Decrypted data:  if enrolled member
+   * - Same data:       if NOT enrolled member
+   * 
+   * @param hash
+   * @param text 
+   */
+  @Get('decrypt/:hash')
+  async decrypt(
+    @Param('hash') hash: string,
+    @Query('text') text: string,
+  ): Promise<ResponseCryptoDto> {
+    return await this.edService.decrypt(hash, text);
+  }
 }

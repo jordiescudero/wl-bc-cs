@@ -1,5 +1,5 @@
 {
-  "name": "bloomen-developer-portal",
+  "name": "MSec-developer-portal",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -36,11 +36,13 @@
     "cookie-parser": "^1.4.4",
     "cross-env": "^6.0.3",
     "dotenv": "^8.1.0",
+    "eth-crypto": "^1.5.1",
     "express-mung": "^0.5.1",
     "hbs": "^4.0.5",
     "helmet": "^3.21.1",
     "i18n": "^0.8.3",
     "joi": "^14.3.1",
+    "module-alias": "^2.2.2",
     "mongodb": "^3.3.2",
     "nodemailer": "^6.3.0",
     "nodemailer-express-handlebars": "^3.1.0",
@@ -52,7 +54,6 @@
     "swagger-ui-express": "^4.1.1",
     "typeorm": "^0.2.19",
     "uuid": "^3.3.2",
-    "module-alias": "^2.2.2",
     "web3": "^1.2.1"
   },
   "devDependencies": {

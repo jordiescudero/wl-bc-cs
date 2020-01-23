@@ -13,5 +13,22 @@
 	"Password": "Password",
 	"Confirm Password": "Confirm Password",
 	"Length": "Length",
-	"CHANGE": "CHANGE"
+	"CHANGE": "CHANGE",
+	"email_register_preview": "email_register_preview",
+	"email_register_logo_alt": "email_register_logo_alt",
+	"email_register_image_alt": "email_register_image_alt",
+	"email_register_title": "email_register_title",
+	"email_register_body": "email_register_body",
+	"email_register_activate": "email_register_activate",
+	"email_register_bloomen_description": "email_register_bloomen_description",
+	"email_eu_footer": "email_eu_footer",
+	"OK": "OK",
+	"email.remember.subject": "email.remember.subject",
+	"email_remember_preview": "email_remember_preview",
+	"email_remember_logo_alt": "email_remember_logo_alt",
+	"email_remember_image_alt": "email_remember_image_alt",
+	"email_remember_title": "email_remember_title",
+	"email_remember_body": "email_remember_body",
+	"email_remember_activate": "email_remember_activate",
+	"email_remember_bloomen_description": "email_remember_bloomen_description"
 }

@@ -11,7 +11,7 @@ import * as path from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 // import { ContractsModule } from './modules/contracts/contracts.module';
 import { CompanionDBModule } from './modules/companion-db/companion-db.module';
-import { EncryptDecryptModule } from './modules/encrypt-decrypt/encrypt-decrypt.module';
+// import { EncryptDecryptModule } from './modules/encrypt-decrypt/encrypt-decrypt.module';
 
 // TODO: try to make configurable the rootPath for ServeStaticModule github Issue: https://github.com/nestjs/serve-static/issues/10
 @Module({
@@ -23,10 +23,12 @@ import { EncryptDecryptModule } from './modules/encrypt-decrypt/encrypt-decrypt.
     DatabaseModule,
     MailModule,
     AuthModule,
-    ApiKeysModule,
+    // ApiKeysModule,
     // ContractsModule,
+    // EncryptDecryptModule,
     CompanionDBModule,
-    EncryptDecryptModule],
+    
+  ],
   controllers: [AppController],
 })
 export class AppModule {

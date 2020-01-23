@@ -1,10 +1,12 @@
 
 import { ApiModelProperty } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
-export class CompanyDto {
+export class ReaderDto {
 
   @ApiModelProperty({ required: true })
   @IsNotEmpty()
+  @IsString()
   readonly authHash: string;
+  
 }
