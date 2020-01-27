@@ -11,10 +11,10 @@ export class Data {
   id!: string;
 
   @Column()
-  hashOwner!: string;
+  dataHash!: string;
 
   @Column()
-  hashData!: string;
+  ownerHash!: string;
 
   @Column()
   data!: string;

@@ -63,7 +63,6 @@ export class EncryptDecryptService {
     }
 
     /**
-     * FIXME: Only the user can encrypt data.
      * This function encrypts the data given with the keyPair of the defined hash. 
      * Returns:
      * - Encrypted data:  if enrolled member

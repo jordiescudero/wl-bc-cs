@@ -50,7 +50,10 @@ export class CompanionDBService {
       hash,
       reader: authHash,
     });
+    //NOTE: Should we check if the the USER is already AUTHORIZED?
+    //At the moment we use it the DB.
 
+    //FIXME: Has to CALL the Blockchain to delete the AUTHORIZATION
     //Check if the reader has been authorised, if not, authorise.
     if (authReader == null) {
       // Create an authorization.
@@ -72,19 +75,14 @@ export class CompanionDBService {
    * @param authHash
    */
   async deauthorise(
-    hash: string,
+    ownerHash: string,
     authHash: string,
-  ): Promise<AuthorisedReaders> {
-    //Get the authorisation.
-    var authReader = await this.authReadersRepository.findOne({
-      hash,
-      reader: authHash,
-    });
+  ): Promise<Boolean> {
 
-    // Delete one authorization.
-    this.authReadersRepository.deleteOne({ hash, company: authHash });
+    //FIXME: Has to CALL the Blockchain to delete the AUTHORIZATION
+    this.authReadersRepository.deleteOne({ hash: ownerHash, company: authHash });
 
-    return authReader;
+    return true;
   }
   
   /**
@@ -96,82 +94,146 @@ export class CompanionDBService {
     //TODO: Create a push to the person that owns the data.
     //FIXME: HOW TO DO A PUSH? CAN AN EMAIL BE SENT?
   }
-  
-  /**
-   * 
-   * @param dataId 
-   */
-  read(dataId: string): Promise<DataDto> {
-    // return this.dataRepository.findOne({ dataId });
-    return;
-  }
 
-  /**
-   * 
-   * @param dataIdList 
-   */
-  readBulk(
-    dataIdList: string[],
-  ): Promise<any> {
-    // return this.dataRepository.find({ dataIdList });
-    return;
-  }
-
-  /**
-   * 
+   /**
+   * Encrypts and saves the data to the database
    * @param data 
    */
   async save(
-    hash: string, 
-    data: Object,
-  ): Promise<Data> {
-    //Enrcypt data
-    var encryptedData = this.edService.encrypt(hash, JSON.stringify(data));
-
+    ownerHash: string, 
+    //dataHash: string, 
+    //data: Object,
+    data: DataDto,
+  ): Promise<Boolean> {
     var dataToDB = new Data();
-    dataToDB.data = (await encryptedData).text;
-    dataToDB.hashData = "123";
-    dataToDB.hashOwner = hash;
-    //Save data
-    this.dataRepository.save(dataToDB);
+    dataToDB.ownerHash = ownerHash;
+    dataToDB.dataHash = data.dataHash;
 
-    return dataToDB;
+    const jsonData = JSON.stringify(data);
+    if(this.isJsonString(jsonData)){
+      dataToDB.data = "The data is not a valid JSON.";
+    } else {
+      //Enrcypt data
+      var encryptedData = this.edService.encrypt(ownerHash, jsonData);
+      dataToDB.data = (await encryptedData).text;
+      
+      //Save data
+      this.dataRepository.save(dataToDB);
+    }
+
+    return true;
   }
 
   /**
    * 
    * @param dataBulkList 
    */
-  saveBulk(
+  async saveBulk(
+    ownerHash: string, 
     dataBulkList: DataListDto,
-  ): Promise<DataListDto> {
-    // return this.dataRepository.save({ dataBulkList });
-    return;
+  ): Promise<Boolean> {
+    
+    var dataList = new DataListDto();
+    dataBulkList.data.forEach(function (value){
+      dataList.data.push(this.save(ownerHash, value));
+    });
+
+    return true;
   }
 
   /**
    * 
-   * @param dataId 
+   * @param dataHash 
    */
-  delete(dataId: string): Promise<any> {
-    return this.dataRepository.deleteOne({ dataId });
+  async read(
+    ownerHash: string, 
+    dataHash: string
+  ): Promise<DataDto> {
+    const decryptedData = new DataDto();
+    //Search data.
+    const rawData =  await this.dataRepository.findOne({ dataHash });
+    decryptedData.dataHash = rawData.dataHash;
+    
+    //Decrypt data.
+    decryptedData.data = (await this.edService.decrypt(ownerHash, rawData.data)).text;
+
+    return decryptedData;
+  }
+
+  /**
+   * 
+   * @param dataHashList 
+   */
+  async readBulk(
+    ownerHash: string, 
+    dataHashList: string[],
+  ): Promise<DataListDto> {
+    
+    var dataList = new DataListDto();
+    dataHashList.forEach(function (value){
+      dataList.data.push(this.read(ownerHash, value));
+    });
+
+    return dataList;
+  }
+
+ 
+  /**
+   * 
+   * @param dataHash 
+   */
+  async delete(
+    ownerHash: string,
+    dataHash: string,
+    ): Promise<Boolean> {
+
+      this.dataRepository.deleteOne({ hash: dataHash });
+      
+      return true;
   }
 
   /**
    * 
    * @param dataIdBulk 
    */
-  deleteBulk(dataIdBulk: string[]): Promise<any> {
-    return this.dataRepository.deleteMany({ dataIdBulk });
+  async deleteBulk(
+    ownerHash: string,
+    dataIdBulk: string[],
+  ): Promise<Boolean> {
+    
+    dataIdBulk.forEach(function (value){
+      this.read(ownerHash, value);
+    });
 
+    return true;
   }
 
   /**
    * PRIVATE
    * @param hash 
    */
-  async deauthoriseAll(hash: string) {
+  async deauthoriseAll(ownerHash: string): Promise<Boolean>{
+    //Read all authorizations.
+    const authorisations = await this.authReadersRepository.find({ hash: ownerHash });
+    
     // Delete all authorisations.
-    return this.authReadersRepository.deleteMany({ hash });
+    authorisations.forEach(function (value){
+      this.deauthorise(ownerHash, value.reader);
+    });
+    
+    return true;
   }  
+
+  /**
+   * PRIVATE
+   * @param str 
+   */
+  isJsonString(str: string) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
 }

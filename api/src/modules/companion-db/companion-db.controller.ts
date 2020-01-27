@@ -25,7 +25,6 @@ import {
 } from '@nestjs/swagger';
 import { ReaderDto } from './model/dto/reader.dto';
 import { DataDto } from './model/dto/data.dto';
-import { MnemonicDto } from './model/dto/mnemonic.dto';
 import { DataListDto } from './model/dto/data-list.dto';
 import { User } from '@common/decorators/user.decorator';
 import { Roles } from '@common/decorators/roles.decorator';
@@ -37,19 +36,6 @@ export class CompanionDBController {
   private log = new Logger('CompanionDBController', true);
 
   constructor(private readonly companionDBService: CompanionDBService) {}
-
-  //FIXME: When registered, we also have to enroll them automatically to the CryptoModule
-  // @Post('enroll')
-  // @Roles('user')
-  // @ApiBearerAuth()
-  // async enroll(
-  //   @User('id') userId: string,
-  //   @Body() mnemonic: MnemonicDto,
-  // ): Promise<any> {
-  //   await this.companionDBService.enroll(userId, mnemonic.mnemonic);
-  //   //FIXME: Think about what to return.
-  //   return;
-  // }
 
   /**
    * 
@@ -119,16 +105,15 @@ export class CompanionDBController {
    * @param hash 
    * @param readerDto 
    */
-  @Post('requestAuthorisation/:hash')
+  @Post('requestAuthorisation/:dataHash')
   @Roles('user')
   @ApiBearerAuth()
   async requestAuthorisation(
     @User('id') userId: string,
-    @Param('hash') hash: string,
+    @Param('dataHash') dataHash: string,
     @Body() readerDto: ReaderDto,
   ) {
-    return await this.companionDBService.requestAuthorisation(hash, readerDto.authHash,
-    );
+    return await this.companionDBService.requestAuthorisation(dataHash, readerDto.authHash);
   }
 
   /**
@@ -144,7 +129,7 @@ export class CompanionDBController {
     @User('id') userId: string,
     @Param('dataId') dataId: string,
   ): Promise<DataDto> {
-    return await this.companionDBService.read(dataId);
+    return await this.companionDBService.read(userId, dataId);
   }
 
   /**
@@ -160,7 +145,7 @@ export class CompanionDBController {
     @User('id') userId: string,
     @Query() dataIdList: string[],
   ): Promise<DataListDto> {
-    return await this.companionDBService.readBulk(dataIdList);
+    return await this.companionDBService.readBulk(userId, dataIdList);
   }
 
   /**
@@ -172,14 +157,17 @@ export class CompanionDBController {
   @Roles('user')
   @ApiBearerAuth()
   @ApiOkResponse({ type: Object })
-  async save(@User('id') userId: string, @Body() data: Object): Promise<Data> {
+  async save(
+    @User('id') userId: string, 
+    @Body() data: DataDto
+  ): Promise<Boolean> {
     return await this.companionDBService.save(userId, data);
   }
 
   /**
    * 
    * @param userId 
-   * @param dataBulkList 
+   * @param dataBulk
    */
   @Post('save/bulk')
   @Roles('user')
@@ -187,9 +175,9 @@ export class CompanionDBController {
   @ApiOkResponse({ type: DataListDto })
   async saveBulk(
     @User('id') userId: string,
-    @Body() dataBulkList: DataListDto,
-  ): Promise<DataListDto> {
-    return await this.companionDBService.saveBulk(dataBulkList);
+    @Body() dataBulk: DataListDto,
+  ): Promise<Boolean> {
+    return await this.companionDBService.saveBulk(userId, dataBulk);
   }
 
   /**
@@ -204,7 +192,7 @@ export class CompanionDBController {
     @User('id') userId: string,
     @Param('dataId') dataId: string,
   ): Promise<any> {
-    return await this.companionDBService.delete(dataId);
+    return await this.companionDBService.delete(userId, dataId);
   }
 
   /**
@@ -219,6 +207,6 @@ export class CompanionDBController {
     @User('id') userId: string,
     @Body() dataIdBulk: string[],
   ): Promise<any> {
-    return await this.companionDBService.deleteBulk(dataIdBulk);
+    return await this.companionDBService.deleteBulk(userId, dataIdBulk);
   }
 }
