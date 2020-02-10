@@ -10,7 +10,7 @@ export class EncryptDecryptResponseDto {
 
     @ApiModelProperty({ required: false })
     @IsOptional()
-    errorText: string;
+    text: string;
 
     @ApiModelProperty({ required: false })
     @IsOptional()

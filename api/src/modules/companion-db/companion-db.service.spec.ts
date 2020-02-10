@@ -16,7 +16,7 @@ import { AuthorisedReaders } from './model/entity/authorisedReaders.entity';
 
 const invalidMnemonic = {
   error: true,
-  errorText: "Invalid mnemonic",
+  text: "Invalid mnemonic",
   mnemonic: "",
 };
 
@@ -26,7 +26,7 @@ const correctMnemonic = {
 
 const alreadyEnrolled = {
   error: true,
-  errorText: "Already enrolled",
+  text: "Already enrolled",
   mnemonic: "",
 }
 

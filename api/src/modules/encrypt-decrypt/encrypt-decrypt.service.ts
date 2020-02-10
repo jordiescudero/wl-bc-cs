@@ -27,7 +27,7 @@ export class EncryptDecryptService {
         const responseDto = new EncryptDecryptResponseDto();
         if(keyPair!=null) {
             responseDto.error = true;
-            responseDto.errorText = "Already enrolled";
+            responseDto.text = "Already enrolled";
             responseDto.mnemonic = '';
             return responseDto;
         }
@@ -41,7 +41,7 @@ export class EncryptDecryptService {
         //Check if the menmonic is valid, if not return.
         if(!bip39.validateMnemonic(mnemonic)) {
             responseDto.error = true;
-            responseDto.errorText = "Invalid mnemonic";
+            responseDto.text = "Invalid mnemonic";
             responseDto.mnemonic = '';
             return responseDto;
         }
@@ -52,8 +52,8 @@ export class EncryptDecryptService {
         const privateKey = identity.privateKey;
 
         //Save the key pair.
-        const kp = this.keyPairRepository.create({ hash, privateKey });
-        this.keyPairRepository.save(kp);
+        const kp = this.keyPairRepository.create({ hash: hash, privateKey: privateKey });
+        await this.keyPairRepository.save(kp);
 
         //Return the mnemonic in order to let the user save it.
         return responseDto;
@@ -67,9 +67,10 @@ export class EncryptDecryptService {
    */
     async disenroll(hash: string): Promise<EncryptDecryptResponseDto> {
         let encryptDecryptResponseDto = new EncryptDecryptResponseDto();
-        const returnedDto = (await this.keyPairRepository.deleteOne({hash}))
-        encryptDecryptResponseDto.error = returnedDto.result.ok == 1;
-        encryptDecryptResponseDto.errorText = "Objects deleted: " + returnedDto.result.n;
+        
+        const returnedDto = await this.keyPairRepository.deleteOne({ hash });
+        encryptDecryptResponseDto.error = returnedDto.result.ok != 1;
+        encryptDecryptResponseDto.text = "Objects deleted: " + returnedDto.result.n;
 
         return encryptDecryptResponseDto;
     }
@@ -85,16 +86,36 @@ export class EncryptDecryptService {
      */
     async encrypt(hash: string, text: string): Promise<ResponseCryptoDto> {
         // Get the "keypair" for the given hash.
-        const keyPair = await this.keyPairRepository.findOne({hash});
-        if (!keyPair) {
-            return {text};
+        // (await this.keyPairRepository.find()).forEach(element => {
+        //     console.log("ALL KEYS: " + element.hash);
+        // });
+        
+        //TO BASE64
+        //const textBase64 = new Buffer(text).toString('base64');
+
+
+        const keyPair = await this.keyPairRepository.findOne({hash: hash});
+        // console.log("KEY PAIR: "+ keyPair.hash);
+        if (keyPair==undefined || keyPair==null || keyPair.hash!=hash) {
+            console.log("INSIDE KEYPAR NOT FOUND");
+            return {text: text};
         }
 
         // Encrypt the "text" with the "private key"
+        // console.log("TEXT: " + text);
+        // console.log("PUBLIC KEY: " + EthCrypto.publicKeyByPrivateKey(keyPair.privateKey));
+        // console.log("PRIVATE KEY: " + keyPair.privateKey);
+        
         const encrypted = await EthCrypto.encryptWithPublicKey(
             EthCrypto.publicKeyByPrivateKey(keyPair.privateKey), // publicKey
             text // message
         );
+        // console.log("ENCRYPT: ciphertext: " + encrypted.ciphertext);
+        // console.log("ENCRYPT: ephemPublicKey: " + encrypted.ephemPublicKey);
+        // console.log("ENCRYPT: IV: " + encrypted.iv);
+        // console.log("ENCRYPT: MAC: " + encrypted.mac);
+
+
         const encryptedString = EthCrypto.cipher.stringify(encrypted);
         
         // Return the "text" encrypted
@@ -112,16 +133,30 @@ export class EncryptDecryptService {
      */
     async decrypt(hash: string, text: string): Promise<ResponseCryptoDto> {
         // Get the "keypair" for the given hash.
-        const keyPair = await this.keyPairRepository.findOne({hash});
-        if (!keyPair) {
-            return {text};
+        const keyPair = await this.keyPairRepository.findOne({hash: hash});
+        if (keyPair==undefined || keyPair==null || keyPair.hash!=hash) {
+            return {text: text};
         }
 
         //Decrypt the "text" with the "private key"
+        // console.log("DECRYPT: TEXT: " + text);
+        // const dec = EthCrypto.cipher.parse(text);
+        // console.log("DECRYPT: ciphertext: " + dec.ciphertext);
+        // console.log("DECRYPT: ephemPublicKey: " + dec.ephemPublicKey);
+        // console.log("DECRYPT: IV: " + dec.iv);
+        // console.log("DECRYPT: MAC: " + dec.mac);
+
+        // console.log("PRIVATE KEY: " + keyPair.privateKey);
+
         const message = await EthCrypto.decryptWithPrivateKey(
             keyPair.privateKey, // privateKey
             EthCrypto.cipher.parse(text) // encrypted-data
         );
+
+        //FROM BASE64
+        //const messageAscii = new Buffer(message, 'base64').toString('ascii');
+
+
 
         // Return the "text" decrypted.
         return {text: message};
