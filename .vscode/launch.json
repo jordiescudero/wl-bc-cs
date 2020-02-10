@@ -30,6 +30,37 @@
             "console": "integratedTerminal",
             "internalConsoleOptions": "openOnSessionStart",
             "port": 9229
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest All API",
+            "cwd": "${workspaceFolder}/api",
+            "program": "${workspaceFolder}/api/node_modules/.bin/jest",
+            "args": ["--runInBand"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "disableOptimisticBPs": true,
+            "windows": {
+              "program": "${workspaceFolder}/api/node_modules/jest/bin/jest",
+            }
+          },
+          {
+            "type": "node",
+            "request": "launch",
+            "name": "Jest Current File API",
+            "cwd": "${workspaceFolder}/api",
+            "program": "${workspaceFolder}/api/node_modules/.bin/jest",
+            "args": [
+              "${fileBasenameNoExtension}",
+              "--config",
+              "jest.config.js"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "disableOptimisticBPs": true,
+            "windows": {
+              "program": "${workspaceFolder}/api/node_modules/jest/bin/jest",
+            }
     ]
 }

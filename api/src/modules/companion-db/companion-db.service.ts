@@ -1,12 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository } from 'typeorm';
 import { AuthorisedReaders } from './model/entity/authorisedReaders.entity';
 import { Data } from './model/entity/data.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { EncryptDecryptService } from '@modules/encrypt-decrypt/encrypt-decrypt.service';
-import { UsersService } from '@modules/auth/user.service';
+import { EncryptDecryptService } from '../encrypt-decrypt/encrypt-decrypt.service';
 import { DataDto } from './model/dto/data.dto';
 import { DataListDto } from './model/dto/data-list.dto';
+import { EncryptDecryptResponseDto } from '../encrypt-decrypt/model/dto/encrypt-decrypt-response.dto';
 
 @Injectable()
 export class CompanionDBService {
@@ -16,7 +16,6 @@ export class CompanionDBService {
     @InjectRepository(Data)
     private readonly dataRepository: MongoRepository<Data>,
     private readonly edService: EncryptDecryptService,
-    private readonly userService: UsersService,
   ) {}
 
   /**
@@ -24,7 +23,7 @@ export class CompanionDBService {
    * @param hash 
    * @param mnemonic 
    */
-  async enroll(hash: string, mnemonic: string): Promise<any> {
+  async enroll(hash: string, mnemonic: string): Promise<EncryptDecryptResponseDto> {
     return this.edService.enroll(hash, mnemonic);
   }
 
@@ -176,6 +175,15 @@ export class CompanionDBService {
 
     return dataList;
   }
+
+  // https://formidable.com/blog/2019/fast-node-testing-mongodb/
+  //   /**
+  //  * Find a list of product documents by IDs
+  //  * @param {ObjectID[]} ids
+  //  */
+  // findByIds(ids) {
+  //   return this.collection.find({ _id: { $in: ids } }).toArray();
+  // }
 
  
   /**

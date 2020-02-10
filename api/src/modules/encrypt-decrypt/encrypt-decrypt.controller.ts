@@ -11,6 +11,7 @@ import {
 import { EncryptDecryptService } from './encrypt-decrypt.service';
 import { RequestCryptoDto } from './model/dto/request-crypto.dto';
 import { ResponseCryptoDto } from './model/dto/response-crypto.dto';
+import { EncryptDecryptResponseDto } from './model/dto/encrypt-decrypt-response.dto';
 
 @Controller({
   path: 'crypto',
@@ -30,7 +31,7 @@ export class EncryptDecryptController {
   async enrol(
     @Param('hash') hash: string,
     @Body('mnemonic') mnemonic: string,
-  ) {
+  ): Promise<EncryptDecryptResponseDto> {
     return await this.edService.enroll(hash, mnemonic);
   }
 

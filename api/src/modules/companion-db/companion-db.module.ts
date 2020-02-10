@@ -4,7 +4,7 @@ import { CompanionDBService } from './companion-db.service';
 import { AuthorisedReaders } from './model/entity/authorisedReaders.entity';
 import { Data } from './model/entity/data.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EncryptDecryptModule } from '@modules/encrypt-decrypt/encrypt-decrypt.module';
+import { EncryptDecryptModule } from '../encrypt-decrypt/encrypt-decrypt.module';
 import { AuthModule } from '@modules/auth/auth.module';
 
 @Module({

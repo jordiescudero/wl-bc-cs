@@ -5,11 +5,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ResponseCryptoDto } from './model/dto/response-crypto.dto';
 import * as bip39 from 'bip39';
 import EthCrypto from 'eth-crypto';
+import { EncryptDecryptResponseDto } from './model/dto/encrypt-decrypt-response.dto';
 
 @Injectable()
 export class EncryptDecryptService {
-    private readonly passphrase = 'top secret';
-
     constructor(
         @InjectRepository(KeyPair)
         private readonly keyPairRepository: MongoRepository<KeyPair>,
@@ -22,21 +21,29 @@ export class EncryptDecryptService {
      * @param hash 
      * @param mnemonic 
      */
-    async enroll(hash: string, mnemonic: string) {
+    async enroll(hash: string, mnemonic: string): Promise<EncryptDecryptResponseDto> {
         //If already enrolled, return
         const keyPair = await this.keyPairRepository.findOne({hash});
+        const responseDto = new EncryptDecryptResponseDto();
         if(keyPair!=null) {
-            return "Already enrolled";
+            responseDto.error = true;
+            responseDto.errorText = "Already enrolled";
+            responseDto.mnemonic = '';
+            return responseDto;
         }
 
         //Check if a mnemonic is sent, if not, create one.
         if(mnemonic == null) {
             mnemonic = bip39.generateMnemonic(256);
         }
+        responseDto.mnemonic = mnemonic;
         
         //Check if the menmonic is valid, if not return.
         if(!bip39.validateMnemonic(mnemonic)) {
-            return "Invalid mnemonic";
+            responseDto.error = true;
+            responseDto.errorText = "Invalid mnemonic";
+            responseDto.mnemonic = '';
+            return responseDto;
         }
         
         //Create the key pair. NOTE: The entropy is dobled to fullfill the needs from the EthCrypto specifications.
@@ -49,7 +56,7 @@ export class EncryptDecryptService {
         this.keyPairRepository.save(kp);
 
         //Return the mnemonic in order to let the user save it.
-        return mnemonic;
+        return responseDto;
     }
 
   /**
@@ -58,8 +65,13 @@ export class EncryptDecryptService {
    * 
    * @param hash 
    */
-    async disenroll(hash: string) {
-        return this.keyPairRepository.deleteOne({hash});
+    async disenroll(hash: string): Promise<EncryptDecryptResponseDto> {
+        let encryptDecryptResponseDto = new EncryptDecryptResponseDto();
+        const returnedDto = (await this.keyPairRepository.deleteOne({hash}))
+        encryptDecryptResponseDto.error = returnedDto.result.ok == 1;
+        encryptDecryptResponseDto.errorText = "Objects deleted: " + returnedDto.result.n;
+
+        return encryptDecryptResponseDto;
     }
 
     /**

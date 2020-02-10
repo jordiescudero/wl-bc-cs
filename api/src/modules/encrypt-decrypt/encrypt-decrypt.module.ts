@@ -5,7 +5,9 @@ import { KeyPair } from './model/entity/keyPair.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([KeyPair])],
+  imports: [
+    TypeOrmModule.forFeature([KeyPair]),
+    ],
   controllers: [EncryptDecryptController],
   providers: [EncryptDecryptService],
   exports: [EncryptDecryptService],
