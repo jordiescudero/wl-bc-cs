@@ -86,36 +86,16 @@ export class EncryptDecryptService {
      */
     async encrypt(hash: string, text: string): Promise<ResponseCryptoDto> {
         // Get the "keypair" for the given hash.
-        // (await this.keyPairRepository.find()).forEach(element => {
-        //     console.log("ALL KEYS: " + element.hash);
-        // });
-        
-        //TO BASE64
-        //const textBase64 = new Buffer(text).toString('base64');
-
-
         const keyPair = await this.keyPairRepository.findOne({hash: hash});
-        // console.log("KEY PAIR: "+ keyPair.hash);
         if (keyPair==undefined || keyPair==null || keyPair.hash!=hash) {
-            console.log("INSIDE KEYPAR NOT FOUND");
             return {text: text};
         }
 
         // Encrypt the "text" with the "private key"
-        // console.log("TEXT: " + text);
-        // console.log("PUBLIC KEY: " + EthCrypto.publicKeyByPrivateKey(keyPair.privateKey));
-        // console.log("PRIVATE KEY: " + keyPair.privateKey);
-        
         const encrypted = await EthCrypto.encryptWithPublicKey(
             EthCrypto.publicKeyByPrivateKey(keyPair.privateKey), // publicKey
             text // message
         );
-        // console.log("ENCRYPT: ciphertext: " + encrypted.ciphertext);
-        // console.log("ENCRYPT: ephemPublicKey: " + encrypted.ephemPublicKey);
-        // console.log("ENCRYPT: IV: " + encrypted.iv);
-        // console.log("ENCRYPT: MAC: " + encrypted.mac);
-
-
         const encryptedString = EthCrypto.cipher.stringify(encrypted);
         
         // Return the "text" encrypted
@@ -139,24 +119,10 @@ export class EncryptDecryptService {
         }
 
         //Decrypt the "text" with the "private key"
-        // console.log("DECRYPT: TEXT: " + text);
-        // const dec = EthCrypto.cipher.parse(text);
-        // console.log("DECRYPT: ciphertext: " + dec.ciphertext);
-        // console.log("DECRYPT: ephemPublicKey: " + dec.ephemPublicKey);
-        // console.log("DECRYPT: IV: " + dec.iv);
-        // console.log("DECRYPT: MAC: " + dec.mac);
-
-        // console.log("PRIVATE KEY: " + keyPair.privateKey);
-
         const message = await EthCrypto.decryptWithPrivateKey(
             keyPair.privateKey, // privateKey
             EthCrypto.cipher.parse(text) // encrypted-data
         );
-
-        //FROM BASE64
-        //const messageAscii = new Buffer(message, 'base64').toString('ascii');
-
-
 
         // Return the "text" decrypted.
         return {text: message};

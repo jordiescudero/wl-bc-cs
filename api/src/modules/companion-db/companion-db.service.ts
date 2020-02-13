@@ -108,12 +108,11 @@ export class CompanionDBService {
     dataToDB.ownerHash = ownerHash;
     dataToDB.dataHash = data.dataHash;
 
-    const jsonData = JSON.stringify(data);
-    if(this.isJsonString(jsonData)){
+    if(!this.isJsonString(JSON.stringify(data))){
       dataToDB.data = "The data is not a valid JSON.";
     } else {
       //Enrcypt data
-      var encryptedData = this.edService.encrypt(ownerHash, jsonData);
+      var encryptedData = this.edService.encrypt(ownerHash, data.data);
       dataToDB.data = (await encryptedData).text;
       
       //Save data
@@ -122,6 +121,7 @@ export class CompanionDBService {
 
     return true;
   }
+  
 
   /**
    * 
@@ -131,11 +131,10 @@ export class CompanionDBService {
     ownerHash: string, 
     dataBulkList: DataListDto,
   ): Promise<Boolean> {
-    
-    var dataList = new DataListDto();
-    dataBulkList.data.forEach(function (value){
-      dataList.data.push(this.save(ownerHash, value));
-    });
+
+    for (var i = 0, len = dataBulkList.data.length; i < len; i++) {
+      await this.save(ownerHash, dataBulkList.data[i]);
+    }
 
     return true;
   }
@@ -151,11 +150,14 @@ export class CompanionDBService {
     const decryptedData = new DataDto();
     //Search data.
     const rawData =  await this.dataRepository.findOne({ dataHash });
+    if(rawData==undefined || rawData==null) {
+      return null;
+    }
     decryptedData.dataHash = rawData.dataHash;
     
     //Decrypt data.
     decryptedData.data = (await this.edService.decrypt(ownerHash, rawData.data)).text;
-
+    
     return decryptedData;
   }
 
@@ -169,9 +171,10 @@ export class CompanionDBService {
   ): Promise<DataListDto> {
     
     var dataList = new DataListDto();
-    dataHashList.forEach(function (value){
-      dataList.data.push(this.read(ownerHash, value));
-    });
+    dataList.data = [];
+    for (var i = 0, len = dataHashList.length; i < len; i++) {
+      dataList.data.push(await this.read(ownerHash, dataHashList[i]));
+    }
 
     return dataList;
   }
@@ -195,7 +198,7 @@ export class CompanionDBService {
     dataHash: string,
     ): Promise<Boolean> {
 
-      this.dataRepository.deleteOne({ hash: dataHash });
+      this.dataRepository.deleteOne({ dataHash: dataHash });
       
       return true;
   }
@@ -209,9 +212,9 @@ export class CompanionDBService {
     dataIdBulk: string[],
   ): Promise<Boolean> {
     
-    dataIdBulk.forEach(function (value){
-      this.read(ownerHash, value);
-    });
+    for (var i = 0, len = dataIdBulk.length; i < len; i++) {
+      await this.delete(ownerHash, dataIdBulk[i]);
+    }
 
     return true;
   }
@@ -225,9 +228,9 @@ export class CompanionDBService {
     const authorisations = await this.authReadersRepository.find({ hash: ownerHash });
     
     // Delete all authorisations.
-    authorisations.forEach(function (value){
-      this.deauthorise(ownerHash, value.reader);
-    });
+    for (var i = 0, len = authorisations.length; i < len; i++) {
+      await this.deauthorise(ownerHash, authorisations[i].reader);
+    }
     
     return true;
   }  

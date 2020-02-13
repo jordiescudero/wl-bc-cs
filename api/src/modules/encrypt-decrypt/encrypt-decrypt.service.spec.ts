@@ -5,10 +5,7 @@ import { EncryptDecryptResponseDto } from './model/dto/encrypt-decrypt-response.
 import { ResponseCryptoDto } from './model/dto/response-crypto.dto';
 import { KeyPair } from './model/entity/keyPair.entity';
 import DbModule from '../db-test/db-test.module';
-import { stringify } from 'querystring';
-import { ConfigModule } from '@common/config/config.module';
 import { Connection } from 'typeorm';
-import { getConnection } from 'typeorm';
 
 const invalidMnemonic = {
   error: true,
@@ -47,7 +44,7 @@ const notFoundDecryption = {
 const userHash = 'userhash_123';
 const userHashe2e = 'userhash_123e2e';
 
-const wait = time => new Promise(resolve => setTimeout(() => resolve(time), time));
+//const wait = time => new Promise(resolve => setTimeout(() => resolve(time), time));
 
 let moduleTest: TestingModule;
 let databaseName: string;
@@ -84,7 +81,6 @@ describe('EncryptDecryptService', () => {
     let connection = moduleTest.get<Connection>(Connection);
     await connection.close();
     await moduleTest.close();
-    global['__MONGOD__'].drop
     global['__MONGOD__'].stop();
 
     done();
@@ -208,30 +204,5 @@ describe('EncryptDecryptService', () => {
 
     done();
   });
-
-  // it('should save the user and add the createdAt and savedAt fields', async () => {
-  //   const user = service.create(testUser);
-  //   await service.save(user);
-
-  //   expect(user.createdAt).toBeTruthy();
-  //   expect(user.updatedAt).toBeTruthy();
-  // });
-
-  // it('should update the updatedAt field after an update (with the save method of the service)', async () => {
-  //   const user = service.create(testUser);
-  //   expect(user.updatedAt).not.toBeTruthy();
-
-  //   await service.save(user);
-  //   expect(user.updatedAt).toBeTruthy();
-  //   expect(user.createdAt.getTime()).toBe(user.updatedAt.getTime());
-
-  //   const actualUpdate = user.updatedAt;
-  //   user.email = 'test2@test2.com';
-  //   expect(user.updatedAt.getTime()).toBe(actualUpdate.getTime());
-
-  //   await service.save(user);
-  //   await wait(20); // <-- this is just to simulate an update after "some time"
-  //   expect(user.updatedAt.getTime()).toBeGreaterThan(actualUpdate.getTime());
-  // });
-
+  
 });
