@@ -31,7 +31,7 @@ export class CompanionDBService {
    * 
    * @param hash 
    */
-  async disenroll(hash: string): Promise<any> {
+  async disenroll(hash: string): Promise<EncryptDecryptResponseDto> {
     // Delete all authorisations of the database for this hash.
     this.deauthoriseAll(hash);
 
@@ -46,7 +46,7 @@ export class CompanionDBService {
    */
   async authorise(hash: string, authHash: string): Promise<AuthorisedReaders> {
     var authReader = await this.authReadersRepository.findOne({
-      hash,
+      hash: hash,
       reader: authHash,
     });
     //NOTE: Should we check if the the USER is already AUTHORIZED?
@@ -57,12 +57,18 @@ export class CompanionDBService {
     if (authReader == null) {
       // Create an authorization.
       authReader = this.authReadersRepository.create({
-        hash,
+        hash: hash,
         reader: authHash,
       });
 
       // Save the authorization.
-      this.authReadersRepository.save(authReader);
+      await this.authReadersRepository.save(authReader);
+
+      // Get the authorization complete with the ID.
+      authReader = await this.authReadersRepository.findOne({
+        hash: hash,
+        reader: authHash,
+      });
     }
 
     return authReader;
