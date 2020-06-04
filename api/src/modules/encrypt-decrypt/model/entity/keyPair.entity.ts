@@ -16,4 +16,7 @@ export class KeyPair {
   @Column()
   privateKey!: string;
 
+  @Column()
+  mnemonic!: string;
+
 }

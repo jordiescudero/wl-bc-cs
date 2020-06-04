@@ -7,6 +7,7 @@ import { EncryptDecryptService } from '../encrypt-decrypt/encrypt-decrypt.servic
 import { DataDto } from './model/dto/data.dto';
 import { DataListDto } from './model/dto/data-list.dto';
 import { EncryptDecryptResponseDto } from '../encrypt-decrypt/model/dto/encrypt-decrypt-response.dto';
+import { Web3Service } from '../web3/web3.service';
 
 @Injectable()
 export class CompanionDBService {
@@ -16,97 +17,177 @@ export class CompanionDBService {
     @InjectRepository(Data)
     private readonly dataRepository: MongoRepository<Data>,
     private readonly edService: EncryptDecryptService,
+    private readonly web3Service: Web3Service,
   ) {}
 
   /**
-   * 
-   * @param hash 
-   * @param mnemonic 
+   *
+   * @param ownerHash
+   * @param mnemonic
    */
-  async enroll(hash: string, mnemonic: string): Promise<EncryptDecryptResponseDto> {
-    return this.edService.enroll(hash, mnemonic);
+  async enroll(
+    ownerHash: string,
+    mnemonic: string,
+  ): Promise<EncryptDecryptResponseDto> {
+    return this.edService.enroll(ownerHash, mnemonic);
   }
 
   /**
-   * 
-   * @param hash 
+   *
+   * @param ownerHash
    */
-  async disenroll(hash: string): Promise<EncryptDecryptResponseDto> {
+  async disenroll(ownerHash: string): Promise<EncryptDecryptResponseDto> {
     // Delete all authorisations of the database for this hash.
-    this.deauthoriseAll(hash);
+    this.deauthoriseAll(ownerHash);
 
     // Disenrol from the Crypto Module.
-    return this.edService.disenroll(hash);
+    return this.edService.disenroll(ownerHash);
   }
 
   /**
-   * 
-   * @param hash
-   * @param authHash
+   *
+   * @param ownerHash
+   * @param readerHash
    */
-  async authorise(hash: string, authHash: string): Promise<AuthorisedReaders> {
-    var authReader = await this.authReadersRepository.findOne({
-      hash: hash,
-      reader: authHash,
+  async authorise(ownerHash: string, readerHash: string): Promise<any> {
+    this.web3Service._initContext(await this.edService.getMnemonic(ownerHash));
+
+    return await new Promise((resolve, reject) => {
+      this.web3Service.authorisationContract.methods
+        //.giveAuthorisation(ownerHash, readerHash)
+        .giveAuthorisation(readerHash)
+        .send(this.web3Service.transactionObject)
+        .on('transactionHash', hash => {
+          this.web3Service._checkTransaction(hash).then(
+            () => {
+              //AUTHORISATION GRANTED.
+              //console.log("AUTHORISATION GRANTED.");
+              resolve({
+                hash: ownerHash,
+                reader: readerHash,
+                authorised: true,
+              });
+            },
+            err => reject(err),
+          );
+        });
+    }).catch(error => {
+      console.log('AUTHORISE ERROR', error);
     });
-    //NOTE: Should we check if the the USER is already AUTHORIZED?
-    //At the moment we use it the DB.
-
-    //FIXME: Has to CALL the Blockchain to delete the AUTHORIZATION
-    //Check if the reader has been authorised, if not, authorise.
-    if (authReader == null) {
-      // Create an authorization.
-      authReader = this.authReadersRepository.create({
-        hash: hash,
-        reader: authHash,
-      });
-
-      // Save the authorization.
-      await this.authReadersRepository.save(authReader);
-
-      // Get the authorization complete with the ID.
-      authReader = await this.authReadersRepository.findOne({
-        hash: hash,
-        reader: authHash,
-      });
-    }
-
-    return authReader;
   }
 
   /**
-   * 
-   * @param hash
-   * @param authHash
+   *
+   * @param ownerHash
+   * @param readerHash
    */
-  async deauthorise(
+  async deauthorise(ownerHash: string, readerHash: string): Promise<any> {
+    this.web3Service._initContext(await this.edService.getMnemonic(ownerHash));
+
+    return new Promise((resolve, reject) => {
+      this.web3Service.authorisationContract.methods
+        //.removeAuthorisation(ownerHash, readerHash)
+        .removeAuthorisation(readerHash)
+        .send(this.web3Service.transactionObject)
+        .on('transactionHash', hash => {
+          this.web3Service._checkTransaction(hash).then(
+            () => {
+              //AUTHORISATION REMOVED.
+              //console.log("AUTHORISATION REMOVED.");
+
+              resolve({
+                hash: ownerHash,
+                reader: readerHash,
+                authorised: false,
+              });
+            },
+            err => reject(err),
+          );
+        });
+    }).catch(error => {
+      console.log('DEAUTHORISE ERROR', error);
+    });
+  }
+
+  /**
+   *
+   * @param ownerHash
+   * @param readerHash
+   */
+  async requestAuthorisation(
     ownerHash: string,
-    authHash: string,
-  ): Promise<Boolean> {
+    readerHash: string,
+  ): Promise<any> {
+    this.web3Service._initContext(await this.edService.getMnemonic(ownerHash));
 
-    //FIXME: Has to CALL the Blockchain to delete the AUTHORIZATION
-    this.authReadersRepository.deleteOne({ hash: ownerHash, company: authHash });
+    return new Promise((resolve, reject) => {
+      this.web3Service.authorisationContract.methods
+        //.requestAuthorisation(ownerHash, readerHash)
+        .requestAuthorisation(ownerHash)
+        .send(this.web3Service.transactionObject)
+        .on('transactionHash', hash => {
+          this.web3Service._checkTransaction(hash).then(
+            () => {
+              //AUTHORISATION REQUESTED.
+              //console.log("AUTHORISATION REQUESTED.");
 
-    return true;
+              resolve({
+                hash: ownerHash,
+                reader: readerHash,
+                authorised: 'requested',
+              });
+            },
+            err => reject(err),
+          );
+        });
+    }).catch(error => {
+      console.log('REQUEST AUTHORISATION ERROR', error);
+    });
   }
-  
+
   /**
-   * 
-   * @param userId 
-   * @param authHash 
+   *
+   * @param ownerHash
+   * @param readerHash
    */
-  async requestAuthorisation(userId: string, authHash: string) {
-    //TODO: Create a push to the person that owns the data.
-    //FIXME: HOW TO DO A PUSH? CAN AN EMAIL BE SENT?
+  async approveAuthorisation(
+    ownerHash: string,
+    readerHash: string,
+  ): Promise<any> {
+    this.web3Service._initContext(await this.edService.getMnemonic(ownerHash));
+
+    return new Promise((resolve, reject) => {
+      this.web3Service.authorisationContract.methods
+        //.approveAuthorisation(ownerHash, readerHash)
+        .approveAuthorisation(readerHash)
+        .send(this.web3Service.transactionObject)
+        .on('transactionHash', hash => {
+          this.web3Service._checkTransaction(hash).then(
+            () => {
+              //AUTHORISATION REQUESTED => APPROVED.
+              //console.log("AUTHORISATION REQUESTED IS APPROVED");
+
+              resolve({
+                hash: ownerHash,
+                reader: readerHash,
+                authorised: true,
+              });
+            },
+            err => reject(err),
+          );
+        });
+    }).catch(error => {
+      console.log('APPROVE AUTHORISATION ERROR', error);
+    });
   }
 
-   /**
+  /**
    * Encrypts and saves the data to the database
-   * @param data 
+   * @param data
    */
   async save(
-    ownerHash: string, 
-    //dataHash: string, 
+    ownerHash: string,
+    //dataHash: string,
     //data: Object,
     data: DataDto,
   ): Promise<Boolean> {
@@ -114,30 +195,28 @@ export class CompanionDBService {
     dataToDB.ownerHash = ownerHash;
     dataToDB.dataHash = data.dataHash;
 
-    if(!this.isJsonString(JSON.stringify(data))){
-      dataToDB.data = "The data is not a valid JSON.";
+    if (!this.isJsonString(JSON.stringify(data))) {
+      dataToDB.data = 'The data is not a valid JSON.';
     } else {
       //Enrcypt data
       var encryptedData = this.edService.encrypt(ownerHash, data.data);
       dataToDB.data = (await encryptedData).text;
-      
+
       //Save data
       this.dataRepository.save(dataToDB);
     }
 
     return true;
   }
-  
 
   /**
-   * 
-   * @param dataBulkList 
+   *
+   * @param dataBulkList
    */
   async saveBulk(
-    ownerHash: string, 
+    ownerHash: string,
     dataBulkList: DataListDto,
   ): Promise<Boolean> {
-
     for (var i = 0, len = dataBulkList.data.length; i < len; i++) {
       await this.save(ownerHash, dataBulkList.data[i]);
     }
@@ -146,36 +225,35 @@ export class CompanionDBService {
   }
 
   /**
-   * 
-   * @param dataHash 
+   *
+   * @param dataHash
    */
-  async read(
-    ownerHash: string, 
-    dataHash: string
-  ): Promise<DataDto> {
+  async read(ownerHash: string, dataHash: string): Promise<DataDto> {
     const decryptedData = new DataDto();
     //Search data.
-    const rawData =  await this.dataRepository.findOne({ dataHash });
-    if(rawData==undefined || rawData==null) {
+    const rawData = await this.dataRepository.findOne({ dataHash });
+    if (rawData == undefined || rawData == null) {
       return null;
     }
     decryptedData.dataHash = rawData.dataHash;
-    
+
     //Decrypt data.
-    decryptedData.data = (await this.edService.decrypt(ownerHash, rawData.data)).text;
-    
+    decryptedData.data = (await this.edService.decrypt(
+      ownerHash,
+      rawData.data,
+    )).text;
+
     return decryptedData;
   }
 
   /**
-   * 
-   * @param dataHashList 
+   *
+   * @param dataHashList
    */
   async readBulk(
-    ownerHash: string, 
+    ownerHash: string,
     dataHashList: string[],
   ): Promise<DataListDto> {
-    
     var dataList = new DataListDto();
     dataList.data = [];
     for (var i = 0, len = dataHashList.length; i < len; i++) {
@@ -194,30 +272,21 @@ export class CompanionDBService {
   //   return this.collection.find({ _id: { $in: ids } }).toArray();
   // }
 
- 
   /**
-   * 
-   * @param dataHash 
+   *
+   * @param dataHash
    */
-  async delete(
-    ownerHash: string,
-    dataHash: string,
-    ): Promise<Boolean> {
+  async delete(ownerHash: string, dataHash: string): Promise<Boolean> {
+    this.dataRepository.deleteOne({ dataHash: dataHash });
 
-      this.dataRepository.deleteOne({ dataHash: dataHash });
-      
-      return true;
+    return true;
   }
 
   /**
-   * 
-   * @param dataIdBulk 
+   *
+   * @param dataIdBulk
    */
-  async deleteBulk(
-    ownerHash: string,
-    dataIdBulk: string[],
-  ): Promise<Boolean> {
-    
+  async deleteBulk(ownerHash: string, dataIdBulk: string[]): Promise<Boolean> {
     for (var i = 0, len = dataIdBulk.length; i < len; i++) {
       await this.delete(ownerHash, dataIdBulk[i]);
     }
@@ -227,30 +296,32 @@ export class CompanionDBService {
 
   /**
    * PRIVATE
-   * @param hash 
+   * @param hash
    */
-  async deauthoriseAll(ownerHash: string): Promise<Boolean>{
+  async deauthoriseAll(ownerHash: string): Promise<Boolean> {
     //Read all authorizations.
-    const authorisations = await this.authReadersRepository.find({ hash: ownerHash });
-    
+    const authorisations = await this.authReadersRepository.find({
+      hash: ownerHash,
+    });
+
     // Delete all authorisations.
     for (var i = 0, len = authorisations.length; i < len; i++) {
       await this.deauthorise(ownerHash, authorisations[i].reader);
     }
-    
+
     return true;
-  }  
+  }
 
   /**
    * PRIVATE
-   * @param str 
+   * @param str
    */
   isJsonString(str: string) {
     try {
-        JSON.parse(str);
+      JSON.parse(str);
     } catch (e) {
-        return false;
+      return false;
     }
     return true;
-}
+  }
 }
