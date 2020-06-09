@@ -14,7 +14,8 @@
     "start:debug": "cross-env NODE_ENV=development DEBUG=true nodemon --config nodemon-debug.json",
     "start:prod": "cross-env NODE_ENV=development node dist/main",
     "lint": "tslint -p tsconfig.json -c tslint.json",
-    "test": "jest",
+    "test": "jest --runInBand ",
+    "test:timeout": "jest --runInBand --testTimeout=30000",
     "test:watch": "jest --watch",
     "test:cov": "jest --detectOpenHandles",
     "test:covWatch": "jest --coverage --detectOpenHandles --watchAll",
@@ -32,17 +33,20 @@
     "@nestjs/serve-static": "^1.0.1",
     "@nestjs/swagger": "^3.1.0",
     "@nestjs/typeorm": "^6.2.0",
+    "@types/web3": "^1.2.2",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.10.1",
     "cookie-parser": "^1.4.4",
     "cross-env": "^6.0.3",
     "dotenv": "^8.1.0",
     "eth-crypto": "^1.5.1",
+    "truffle-hdwallet-provider": "0.0.6",
     "express-mung": "^0.5.1",
     "hbs": "^4.0.5",
     "helmet": "^3.21.1",
     "i18n": "^0.8.3",
     "joi": "^14.3.1",
+    "lerna": "^3.20.2",
     "module-alias": "^2.2.2",
     "mongodb": "^3.3.2",
     "nodemailer": "^6.3.0",
@@ -55,7 +59,7 @@
     "swagger-ui-express": "^4.1.1",
     "typeorm": "^0.2.19",
     "uuid": "^3.3.2",
-    "web3": "^1.2.1"
+    "web3": "^1.2.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^6.9.0",
@@ -64,7 +68,7 @@
     "@shelf/jest-mongodb": "^1.1.3",
     "@types/express": "^4.17.1",
     "@types/jest": "^24.0.18",
-    "@types/node": "^12.7.5",
+    "@types/node": "^12.12.30",
     "@types/nodemailer": "^6.2.1",
     "@types/supertest": "^2.0.8",
     "core-js": "^3.6.4",
@@ -85,7 +89,13 @@
     "verbose": true,
     "preset": "@shelf/jest-mongodb",
     "collectCoverage": true,
-    "coverageReporters": ["json", "lcov", "text", "clover", "html"],
+    "coverageReporters": [
+      "json",
+      "lcov",
+      "text",
+      "clover",
+      "html"
+    ],
     "moduleFileExtensions": [
       "js",
       "json",
@@ -97,7 +107,14 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "coverageDirectory": "./coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "@app/(.*)": "<rootDir>/$1",
+      "@modules/(.*)": "<rootDir>/modules/$1",
+      "@common/(.*)": "<rootDir>/common/$1",
+      "@auth/(.*)": "<rootDir>/modules/auth/$1",
+      "@contracts/(.*)": "<rootDir>/contracts/$1"
+    }
   },
   "_moduleAliases": {
     "@modules": "dist/modules",
