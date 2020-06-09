@@ -7,5 +7,6 @@ import { ConfigModule } from '@common/config/config.module';
     ConfigModule,
   ],
     providers: [Web3Service],
+    exports: [Web3Service],
 })
 export class Web3Module { }
