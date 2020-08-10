@@ -4,7 +4,7 @@ import { MongoRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ResponseCryptoDto } from './model/dto/response-crypto.dto';
 import * as bip39 from 'bip39';
-import EthCrypto from 'eth-crypto';
+import EthCrypto, { Encrypted } from 'eth-crypto';
 import { EncryptDecryptResponseDto } from './model/dto/encrypt-decrypt-response.dto';
 var HDKey = require('hdkey')
 
@@ -84,8 +84,8 @@ export class EncryptDecryptService {
         let encryptDecryptResponseDto = new EncryptDecryptResponseDto();
         
         const response = await this.keyPairRepository.deleteOne({ hash });
-        encryptDecryptResponseDto.error = response.result.ok != 1;
-        encryptDecryptResponseDto.text = "Objects deleted: " + response.result.n;
+        encryptDecryptResponseDto.error = response.result.n != response.deletedCount;
+        encryptDecryptResponseDto.text = "Objects deleted: " + response.deletedCount;
 
         return encryptDecryptResponseDto;
     }
@@ -103,20 +103,31 @@ export class EncryptDecryptService {
         // Get the "keypair" for the given hash.
         const keyPair = await this.keyPairRepository.findOne({hash: hash});
         if (keyPair==undefined || keyPair==null || keyPair.hash!=hash) {
-            return {text: text};
+            return {text};
         }
+
+        // console.log("TEXT TO ENCRYPT: " + text);
+        // console.log("/////////////////");
+        // console.log("HEX PRIVATE KEY: " + HDKey.fromExtendedKey(keyPair.privateKey).privateKey.toString('hex'));
+        // console.log("HEX PUBLIC KEY: " + HDKey.fromExtendedKey(keyPair.privateKey).publicKey.toString('hex'));
+        // console.log("/////////////////");
 
         // Encrypt the "text" with the "public key"
         const encrypted = await EthCrypto.encryptWithPublicKey(
-            //EthCrypto.publicKeyByPrivateKey(keyPair.privateKey), // publicKey
-            HDKey.fromExtendedKey(keyPair.privateKey).publicKey.toString('hex'),
-            text // message
-        );
+                HDKey.fromExtendedKey(keyPair.privateKey).publicKey.toString('hex'),
+                text // message
+            );
+
+        // console.log("ENCRYPTED: " + EthCrypto.cipher.stringify(encrypted));
         const encryptedString = EthCrypto.cipher.stringify(encrypted);
+
+        //FOR TESTING PURPOSES
+        //console.log(this.decrypt(hash, encryptedString));
         
         // Return the "text" encrypted
         return {text: encryptedString};
     }
+
 
     /**
      * This function decrypts the data given with the keyPair of the defined hash.
@@ -131,14 +142,23 @@ export class EncryptDecryptService {
         // Get the "keypair" for the given hash.
         const keyPair = await this.keyPairRepository.findOne({hash: hash});
         if (keyPair==undefined || keyPair==null || keyPair.hash!=hash) {
-            return {text: text};
+            return {text};
         }
 
         //Decrypt the "text" with the "private key"
+        // console.log("TEXT TO DECRYPT: " + text);
+        // console.log("MORE: " + JSON.stringify(EthCrypto.cipher.parse(text)));
+        // console.log("/////////////////");
+        // console.log("HEX PRIVATE KEY: " + HDKey.fromExtendedKey(keyPair.privateKey).privateKey.toString('hex'));
+        // console.log("HEX PUBLIC KEY: " + HDKey.fromExtendedKey(keyPair.privateKey).publicKey.toString('hex'));
+        // console.log("/////////////////");
+        
         const message = await EthCrypto.decryptWithPrivateKey(
             HDKey.fromExtendedKey(keyPair.privateKey).privateKey.toString('hex'), // privateKey
             EthCrypto.cipher.parse(text) // encrypted-data
         );
+
+        // console.log("DECRYPTED: " + message);
 
         // Return the "text" decrypted.
         return {text: message};

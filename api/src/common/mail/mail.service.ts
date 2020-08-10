@@ -1,7 +1,7 @@
 import { ConfigService } from '@common/config/config.service';
 import * as nodemailer from 'nodemailer';
 import { Injectable, Logger } from '@nestjs/common';
-import * as hbs from 'nodemailer-express-handlebars';
+import hbs from 'nodemailer-express-handlebars';
 import * as handlebars from 'express-handlebars';
 
 import * as i18n from 'i18n';

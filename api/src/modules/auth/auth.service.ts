@@ -7,7 +7,7 @@ import { Token } from './model/entity/token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OnetimeToken } from './model/entity/one.time.token.entity';
 import { RefreshDto } from './model/dto/refresh.dto';
-import * as uuidv4 from 'uuid/v4';
+import uuidv4 from 'uuid/v4';
 import { ResponseTokenDto } from './model/dto/response-token.dto';
 import { TokenDto } from './model/dto/token.dto';
 import { User } from './model/entity/user.entity';

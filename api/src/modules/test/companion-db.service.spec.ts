@@ -218,18 +218,18 @@ describe('CompanionDBService Testing Set', () => {
   });
 
   it('The DISENROLL function should disenroll/delete user key pair and return expected message.', async (done) => {
-    let encryptDecryptResponseDto = await service.disenroll(authorisedReaders_Test_One.hash);
-    expect(encryptDecryptResponseDto).toEqual(edResponse_CorrectDisenroll_Single);
-    expect(encryptDecryptResponseDto instanceof EncryptDecryptResponseDto).toBe(true);
+    let dto = await service.disenroll(authorisedReaders_Test_One.hash);
+    expect(dto).toEqual(edResponse_CorrectDisenroll_Single);
+    expect(dto instanceof EncryptDecryptResponseDto).toBe(true);
 
     done();
   });
 
   
   it('The DISENROLL function should disenroll and return expected message on a non existing user.', async (done) => {
-    let encryptDecryptResponseDto = await service.disenroll("INVENTED");
-    expect(encryptDecryptResponseDto).toEqual(edResponse_CorrectDisenrollInvented);
-    expect(encryptDecryptResponseDto instanceof EncryptDecryptResponseDto).toBe(true);
+    let dto = await service.disenroll("INVENTED");
+    expect(dto).toEqual(edResponse_CorrectDisenrollInvented);
+    expect(dto instanceof EncryptDecryptResponseDto).toBe(true);
 
     done();
   });

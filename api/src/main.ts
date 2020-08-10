@@ -4,10 +4,10 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { setupSwagger } from './common/swagger';
-import * as helmet from 'helmet';
-import * as hbs from 'hbs';
+import helmet from 'helmet';
+import hbs from 'hbs';
 import * as i18n from 'i18n';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 import * as mung from 'express-mung';
 import * as path from 'path';
 

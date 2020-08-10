@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import * as AuthorisationContractJson from '../smartcontracts/authorisation/json/Authorisation.json';
-import * as Web3 from 'web3';
+//import * as Web3 from 'web3';
+import Web3 from 'web3';
 const HDWalletProvider = require('truffle-hdwallet-provider');
 import { ConfigService } from '@common/config/config.service';
 

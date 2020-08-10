@@ -29,7 +29,7 @@ export class CompanionDBService {
     ownerHash: string,
     mnemonic: string,
   ): Promise<EncryptDecryptResponseDto> {
-    return this.edService.enroll(ownerHash, mnemonic);
+    return await this.edService.enroll(ownerHash, mnemonic);
   }
 
   /**
@@ -41,7 +41,7 @@ export class CompanionDBService {
     this.deauthoriseAll(ownerHash);
 
     // Disenrol from the Crypto Module.
-    return this.edService.disenroll(ownerHash);
+    return await this.edService.disenroll(ownerHash);
   }
 
   /**
@@ -199,8 +199,9 @@ export class CompanionDBService {
       dataToDB.data = 'The data is not a valid JSON.';
     } else {
       //Enrcypt data
-      var encryptedData = this.edService.encrypt(ownerHash, data.data);
-      dataToDB.data = (await encryptedData).text;
+      var encryptedData = await this.edService.encrypt(ownerHash, data.data);
+      //console.log(encryptedData);
+      dataToDB.data = encryptedData.text;
 
       //Save data
       this.dataRepository.save(dataToDB);
@@ -242,6 +243,7 @@ export class CompanionDBService {
       ownerHash,
       rawData.data,
     )).text;
+    console.log("decryptedData: "+ JSON.stringify(decryptedData));
 
     return decryptedData;
   }
