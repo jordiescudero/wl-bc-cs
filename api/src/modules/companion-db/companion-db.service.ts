@@ -238,6 +238,8 @@ export class CompanionDBService {
     }
     decryptedData.dataHash = rawData.dataHash;
 
+    //FIXME: TENGO AUTORIZACION?
+
     //Decrypt data.
     decryptedData.data = (await this.edService.decrypt(
       ownerHash,

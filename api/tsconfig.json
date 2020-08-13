@@ -1,5 +1,7 @@
 { 
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "module": "commonjs",
     "declaration": false,
     "removeComments": true,
@@ -17,7 +19,7 @@
       "@contracts/*": ["contracts/*"],
     },
     "incremental": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true    
   },
   "exclude": ["node_modules", "dist"]
 }

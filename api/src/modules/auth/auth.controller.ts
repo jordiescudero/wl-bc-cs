@@ -62,7 +62,7 @@ export class AuthController {
   })
   async register(@Req() req: Request, @Res() res: Response, @Body() payload: RegisterUserDto) {
         
-    //FIXME: When registered, we also have to enroll them automatically to the CryptoModule
+    //TODO: ?¿? When registered, we also have to enroll them automatically to the CryptoModule
 
     const userDb = await this.userService.getByEmail(payload.email);
     if (userDb) {

@@ -46,7 +46,7 @@ export class CompanionDBController {
    */
   @Post('enrol/:hash')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Successful Enrollement', type: EncryptDecryptResponseDto  })
   @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
   @ApiProduces('application/json')
@@ -65,7 +65,7 @@ export class CompanionDBController {
    */
   @Delete('disenrol/:hash')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiResponse({ status: HttpStatus.OK, description: 'Successful Disenrollement', type: EncryptDecryptResponseDto  })
   async disenroll(
     @User('id') userId: string,
@@ -82,7 +82,7 @@ export class CompanionDBController {
    */
   @Post('authorise/:hash')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async authorise(
     @User('id') userId: string,
     @Param('hash') hash: string,
@@ -99,7 +99,7 @@ export class CompanionDBController {
    */
   @Delete('deauthorise/:hash')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async deauthorise(
     @User('id') userId: string,
     @Param('hash') hash: string,
@@ -116,7 +116,7 @@ export class CompanionDBController {
    */
   @Post('requestAuthorisation/:dataHash')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async requestAuthorisation(
     @User('id') userId: string,
     @Param('dataHash') dataHash: string,
@@ -133,7 +133,7 @@ export class CompanionDBController {
    */
   @Post('approveAuthorisation/:dataHash')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async approveAuthorisation(
     @User('id') userId: string,
     @Param('dataHash') dataHash: string,
@@ -149,7 +149,7 @@ export class CompanionDBController {
    */
   @Get('read/:hash/:dataId')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiOkResponse({ type: DataDto })
   async read(
     @User('id') userId: string,
@@ -166,7 +166,7 @@ export class CompanionDBController {
    */
   @Get('read/bulk')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiOkResponse({ type: DataListDto })
   async readBulk(
     @User('id') userId: string,
@@ -182,7 +182,7 @@ export class CompanionDBController {
    */
   @Post('save/:hash')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiOkResponse({ type: Object })
   async save(
     @User('id') userId: string, 
@@ -199,7 +199,7 @@ export class CompanionDBController {
    */
   @Post('save/bulk')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   @ApiOkResponse({ type: DataListDto })
   async saveBulk(
     @User('id') userId: string,
@@ -215,7 +215,7 @@ export class CompanionDBController {
    */
   @Delete('delete/:hash/:dataId')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async delete(
     @User('id') userId: string,
     @Param('hash') hash: string,
@@ -231,7 +231,7 @@ export class CompanionDBController {
    */
   @Delete('delete/bulk')
   @Roles('user')
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async deleteBulk(
     @User('id') userId: string,
     @Body() dataIdBulk: string[],
