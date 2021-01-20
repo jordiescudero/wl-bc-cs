@@ -22,26 +22,24 @@ export class EncryptDecryptService {
      * @param ownerHash 
      * @param mnemonic 
      */
-    async enroll(ownerHash: string, mnemonic: string): Promise<EncryptDecryptResponseDto> {
-        //The mnemonic should always be sent! IT IS MANDATORY!
+    async enroll(ownerHash: string, mnemonic: string, blockchainOwnerKeys): Promise<EncryptDecryptResponseDto> {
         const responseDto = new EncryptDecryptResponseDto();
         responseDto.error = false;
         responseDto.mnemonic = mnemonic;
         responseDto.text = "Enrolled successfully";
-
-        //If no mnemonic sent
-        if(mnemonic == null || !mnemonic) {
+                
+        //The mnemonic should always be sent! IT IS MANDATORY!
+        if(!mnemonic) {
             responseDto.error = true;
             responseDto.text = "Mnemonic required";
             responseDto.mnemonic = '';
             return responseDto;
-            //mnemonic = bip39.generateMnemonic(256);
             
         }
 
         //If already enrolled, return
         const keyPair = await this.keyPairRepository.findOne({hash: ownerHash});
-        if(keyPair!=null) {
+        if(!!keyPair) {
             responseDto.error = true;
             responseDto.text = "Already enrolled";
             responseDto.mnemonic = '';
@@ -52,22 +50,21 @@ export class EncryptDecryptService {
         if(!bip39.validateMnemonic(mnemonic)) {
             responseDto.error = true;
             responseDto.text = "Invalid mnemonic";
-            //responseDto.mnemonic = '';
             return responseDto;
         }
         
-
-        //Create the key pair. NOTE: The entropy is dobled to fullfill the needs from the EthCrypto specifications.
-        // const entropy = Buffer.from(bip39.mnemonicToEntropy(mnemonic)+bip39.mnemonicToEntropy(mnemonic)); // must contain at least 128 chars
-        // const identity = EthCrypto.createIdentity(entropy);
-        // const privateKey = identity.privateKey;
-
         const seed = bip39.mnemonicToSeed(mnemonic);
         const root = HDKey.fromMasterSeed(seed);
         const privateExtendedKey = root.privateExtendedKey;
 
         //Save the key pair.
-        const kp = this.keyPairRepository.create({ hash: ownerHash, privateKey: privateExtendedKey, mnemonic: mnemonic });
+        const kp = this.keyPairRepository.create({ 
+            hash: ownerHash, 
+            mnemonic: mnemonic,
+            privateKey: privateExtendedKey,
+            blockchainOwnerKeys
+        });
+
         await this.keyPairRepository.save(kp);
 
         //Return the mnemonic in order to let the user save it.
@@ -106,23 +103,13 @@ export class EncryptDecryptService {
             return {text};
         }
 
-        // console.log("TEXT TO ENCRYPT: " + text);
-        // console.log("/////////////////");
-        // console.log("HEX PRIVATE KEY: " + HDKey.fromExtendedKey(keyPair.privateKey).privateKey.toString('hex'));
-        // console.log("HEX PUBLIC KEY: " + HDKey.fromExtendedKey(keyPair.privateKey).publicKey.toString('hex'));
-        // console.log("/////////////////");
-
         // Encrypt the "text" with the "public key"
-        const encrypted = await EthCrypto.encryptWithPublicKey(
+        const encrypted: Encrypted = await EthCrypto.encryptWithPublicKey(
                 HDKey.fromExtendedKey(keyPair.privateKey).publicKey.toString('hex'),
                 text // message
             );
-
-        // console.log("ENCRYPTED: " + EthCrypto.cipher.stringify(encrypted));
+        
         const encryptedString = EthCrypto.cipher.stringify(encrypted);
-
-        //FOR TESTING PURPOSES
-        //console.log(this.decrypt(hash, encryptedString));
         
         // Return the "text" encrypted
         return {text: encryptedString};
@@ -143,22 +130,12 @@ export class EncryptDecryptService {
         const keyPair = await this.keyPairRepository.findOne({hash: hash});
         if (keyPair==undefined || keyPair==null || keyPair.hash!=hash) {
             return {text};
-        }
-
-        //Decrypt the "text" with the "private key"
-        // console.log("TEXT TO DECRYPT: " + text);
-        // console.log("MORE: " + JSON.stringify(EthCrypto.cipher.parse(text)));
-        // console.log("/////////////////");
-        // console.log("HEX PRIVATE KEY: " + HDKey.fromExtendedKey(keyPair.privateKey).privateKey.toString('hex'));
-        // console.log("HEX PUBLIC KEY: " + HDKey.fromExtendedKey(keyPair.privateKey).publicKey.toString('hex'));
-        // console.log("/////////////////");
+        }        
         
         const message = await EthCrypto.decryptWithPrivateKey(
             HDKey.fromExtendedKey(keyPair.privateKey).privateKey.toString('hex'), // privateKey
             EthCrypto.cipher.parse(text) // encrypted-data
         );
-
-        // console.log("DECRYPTED: " + message);
 
         // Return the "text" decrypted.
         return {text: message};

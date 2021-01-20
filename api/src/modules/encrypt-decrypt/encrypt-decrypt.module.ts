@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { EncryptDecryptController } from './encrypt-decrypt.controller';
 import { EncryptDecryptService } from './encrypt-decrypt.service';
 import { KeyPair } from './model/entity/keyPair.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     TypeOrmModule.forFeature([KeyPair]),
     ],
-  controllers: [EncryptDecryptController],
+  controllers: [],
   providers: [EncryptDecryptService],
   exports: [EncryptDecryptService],
 })

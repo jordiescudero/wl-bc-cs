@@ -17,7 +17,7 @@ import { ConfigService } from '@common/config/config.service';
           database: config.databaseName,
           username: config.databaseUsername,
           password: config.databasePassword,
-          entities:  config.isDebug() ? ['src/**/*.entity{.ts,.js}'] : ['dist/**/*.entity{.ts,.js}'],
+          entities:  config.isDebug() ? [config.databaseEntitiesPathDebug] : [config.databaseEntitiesPath],
           synchronize: config.isDev,
           logging: !config.isProd,
           useNewUrlParser: true,

@@ -107,6 +107,14 @@ export class ConfigService {
     return this.envConfig.DATABASE_NAME;
   }
 
+  public get databaseEntitiesPath() {
+    return this.envConfig.DATABASE_ENTITIES_PATH;
+  }
+
+  public get databaseEntitiesPathDebug() {
+    return this.envConfig.DATABASE_ENTITIES_PATH_DEBUG;
+  }
+
   public get jwtSecret() {
     return this.envConfig.JWT_SECRET;
   }

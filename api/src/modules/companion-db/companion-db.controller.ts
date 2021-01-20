@@ -1,21 +1,15 @@
 import {
   Controller,
   Get,
-  Render,
   Post,
   HttpStatus,
   Body,
-  Req,
-  HttpException,
-  Res,
-  Query,
   Delete,
-  Put,
   Param,
   Logger,
   Header,
 } from '@nestjs/common';
-// import { Request, Response } from 'express';
+
 import { CompanionDBService } from './companion-db.service';
 import {
   ApiBearerAuth,
@@ -45,7 +39,7 @@ export class CompanionDBController {
    * @param mnemonic 
    */
   @Post('enrol/:hash')
-  @Roles('user')
+  // @Roles('user')
   // @ApiBearerAuth()
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Successful Enrollement', type: EncryptDecryptResponseDto  })
   @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
@@ -64,7 +58,7 @@ export class CompanionDBController {
    * @param userId 
    */
   @Delete('disenrol/:hash')
-  @Roles('user')
+  // @Roles('user')
   // @ApiBearerAuth()
   @ApiResponse({ status: HttpStatus.OK, description: 'Successful Disenrollement', type: EncryptDecryptResponseDto  })
   async disenroll(
@@ -74,12 +68,56 @@ export class CompanionDBController {
     return await this.companionDBService.disenroll(hash);
   }
 
-    /**
+  /**
    * 
    * @param userId 
-   * @param hash 
-   * @param readerDto 
+   * @param dataId 
    */
+  @Get('read/:ownerHash/:dataId')
+  // @Roles('user')
+  // @ApiBearerAuth()
+  @ApiOkResponse({ type: DataDto })
+  async read(
+    @Param('ownerHash') ownerHash: string,
+    @Param('dataHash') dataHash: string,
+  ): Promise<DataDto> {
+    return await this.companionDBService.read(ownerHash, dataHash);
+  }
+
+  /**
+   * 
+   * @param userId 
+   * @param data 
+   */
+  @Post('save/:ownerHash')
+  // @Roles('user')
+  // @ApiBearerAuth()
+  @ApiOkResponse({ type: Object })
+  async save(
+    @Param('ownerHash') ownerHash: string,
+    @Body() data: DataDto
+  ): Promise<string> {
+     return await this.companionDBService.save(ownerHash, data);     
+  }
+  
+  /**
+   * 
+   * @param userId 
+   * @param dataId 
+   */
+  @Delete('delete/:hash/:dataId')
+  // @Roles('user')
+  // @ApiBearerAuth()
+  async delete(
+    @Param('ownerHash') ownerHash: string,
+    @Param('dataHash') dataHash: string,
+  ): Promise<any> {
+    return await this.companionDBService.delete(ownerHash, dataHash);
+  }
+
+
+  /*
+
   @Post('authorise/:hash')
   @Roles('user')
   // @ApiBearerAuth()
@@ -91,12 +129,6 @@ export class CompanionDBController {
     return await this.companionDBService.authorise(hash, readerDto.authHash);
   }
 
-  /**
-   * 
-   * @param userId 
-   * @param hash 
-   * @param readerDto 
-   */
   @Delete('deauthorise/:hash')
   @Roles('user')
   // @ApiBearerAuth()
@@ -108,12 +140,6 @@ export class CompanionDBController {
     return await this.companionDBService.deauthorise(hash, readerDto.authHash);
   }
 
-  /**
-   * 
-   * @param userId 
-   * @param hash 
-   * @param readerDto 
-   */
   @Post('requestAuthorisation/:dataHash')
   @Roles('user')
   // @ApiBearerAuth()
@@ -125,12 +151,6 @@ export class CompanionDBController {
     return await this.companionDBService.requestAuthorisation(dataHash, readerDto.authHash);
   }
 
-    /**
-   * 
-   * @param userId 
-   * @param hash 
-   * @param readerDto 
-   */
   @Post('approveAuthorisation/:dataHash')
   @Roles('user')
   // @ApiBearerAuth()
@@ -141,101 +161,5 @@ export class CompanionDBController {
   ) {
     return await this.companionDBService.approveAuthorisation(dataHash, readerDto.authHash);
   }
-
-  /**
-   * 
-   * @param userId 
-   * @param dataId 
-   */
-  @Get('read/:hash/:dataId')
-  @Roles('user')
-  // @ApiBearerAuth()
-  @ApiOkResponse({ type: DataDto })
-  async read(
-    @User('id') userId: string,
-    @Param('hash') hash: string,
-    @Param('dataId') dataId: string,
-  ): Promise<DataDto> {
-    return await this.companionDBService.read(hash, dataId);
-  }
-
-  /**
-   * 
-   * @param userId 
-   * @param dataIdList 
-   */
-  @Get('read/bulk')
-  @Roles('user')
-  // @ApiBearerAuth()
-  @ApiOkResponse({ type: DataListDto })
-  async readBulk(
-    @User('id') userId: string,
-    @Query() dataIdList: string[],
-  ): Promise<DataListDto> {
-    return await this.companionDBService.readBulk(userId, dataIdList);
-  }
-
-  /**
-   * 
-   * @param userId 
-   * @param data 
-   */
-  @Post('save/:hash')
-  @Roles('user')
-  // @ApiBearerAuth()
-  @ApiOkResponse({ type: Object })
-  async save(
-    @User('id') userId: string, 
-    @Param('hash') hash: string,
-    @Body() data: DataDto
-  ): Promise<Boolean> {
-    return await this.companionDBService.save(hash, data);
-  }
-
-  /**
-   * 
-   * @param userId 
-   * @param dataBulk
-   */
-  @Post('save/bulk')
-  @Roles('user')
-  // @ApiBearerAuth()
-  @ApiOkResponse({ type: DataListDto })
-  async saveBulk(
-    @User('id') userId: string,
-    @Body() dataBulk: DataListDto,
-  ): Promise<Boolean> {
-    return await this.companionDBService.saveBulk(userId, dataBulk);
-  }
-
-  /**
-   * 
-   * @param userId 
-   * @param dataId 
-   */
-  @Delete('delete/:hash/:dataId')
-  @Roles('user')
-  // @ApiBearerAuth()
-  async delete(
-    @User('id') userId: string,
-    @Param('hash') hash: string,
-    @Param('dataId') dataId: string,
-  ): Promise<any> {
-    return await this.companionDBService.delete(hash, dataId);
-  }
-
-  /**
-   * 
-   * @param userId 
-   * @param dataIdBulk 
-   */
-  @Delete('delete/bulk')
-  @Roles('user')
-  // @ApiBearerAuth()
-  async deleteBulk(
-    @User('id') userId: string,
-    @Body() dataIdBulk: string[],
-  ): Promise<any> {
-    return await this.companionDBService.deleteBulk(userId, dataIdBulk);
-  }
+*/
 }

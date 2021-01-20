@@ -6,17 +6,18 @@ import { Data } from './model/entity/data.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EncryptDecryptModule } from '../encrypt-decrypt/encrypt-decrypt.module';
 import { AuthModule } from '@modules/auth/auth.module';
-import { Web3Module } from '@modules/web3/web3.module';
+import { BlockchainMiddlewareService } from '@modules/blockchain-middleware/blockchain-middleware.service';
+import { KeyPair } from '@modules/encrypt-decrypt/model/entity/keyPair.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([AuthorisedReaders]),
     TypeOrmModule.forFeature([Data]),
+    TypeOrmModule.forFeature([KeyPair]),
     EncryptDecryptModule,
     AuthModule,
-    Web3Module,
   ],
   controllers: [CompanionDBController],
-  providers: [CompanionDBService],
+  providers: [CompanionDBService, BlockchainMiddlewareService],
 })
 export class CompanionDBModule { }

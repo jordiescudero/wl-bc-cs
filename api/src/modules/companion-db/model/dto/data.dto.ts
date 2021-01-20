@@ -3,7 +3,7 @@ import { IsString } from 'class-validator';
 
 export class DataDto {
   
-  @ApiModelProperty({ required: true })
+  @ApiModelProperty()
   @IsString()
   dataHash!: string;
   

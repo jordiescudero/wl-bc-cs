@@ -2,15 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
 import DbModule from './db-test.module';
-import { CompanionDBService } from '../companion-db/companion-db.service';
-import { ConfigService } from '../../common/config/config.service';
-import { EncryptDecryptService } from '../encrypt-decrypt/encrypt-decrypt.service';
-import { Data } from '../companion-db/model/entity/data.entity';
-import { DataListDto } from '../companion-db/model/dto/data-list.dto';
-import { AuthorisedReaders } from '../companion-db/model/entity/authorisedReaders.entity';
-import { EncryptDecryptResponseDto } from '../encrypt-decrypt/model/dto/encrypt-decrypt-response.dto';
-import { KeyPair } from '../encrypt-decrypt/model/entity/keyPair.entity';
-import { Web3Service } from '@modules/web3/web3.service';
+import { CompanionDBService } from '../../companion-db/companion-db.service';
+import { ConfigService } from '../../../common/config/config.service';
+import { EncryptDecryptService } from '../../encrypt-decrypt/encrypt-decrypt.service';
+import { Data } from '../../companion-db/model/entity/data.entity';
+import { DataListDto } from '../../companion-db/model/dto/data-list.dto';
+import { AuthorisedReaders } from '../../companion-db/model/entity/authorisedReaders.entity';
+import { EncryptDecryptResponseDto } from '../../encrypt-decrypt/model/dto/encrypt-decrypt-response.dto';
+import { KeyPair } from '../../encrypt-decrypt/model/entity/keyPair.entity';
+import { Web3Service } from '@modules/non-used/web3/web3.service';
 
 
 const addressOwner = "0x21fAE7517204a8379e4Ee9426A861d6bf22c41C7";
@@ -234,6 +234,7 @@ describe('CompanionDBService Testing Set', () => {
     done();
   });
 
+  /*
   it('The AUTHORISE function should authorise the provided hash.', async (done) => {
     let authorisedReaders = await service.authorise(authorisedReaders_Test_One.hash, authorisedReaders_Test_One.reader);
     expect(authorisedReaders).toEqual(authorisedReaders_Test_One);
@@ -300,7 +301,7 @@ describe('CompanionDBService Testing Set', () => {
 
     done();
   });
-
+  */
   it('The SAVE function should save the data expected and return true.', async (done) => {
     let saved = await service.save(authorisedReaders_Test_One.hash, dataDto_Test_One);
     expect(saved).toEqual(true);
@@ -310,6 +311,7 @@ describe('CompanionDBService Testing Set', () => {
     done();
   });
 
+  /*
   it('The SAVEBULK function returns true and saves all data provided.', async (done) => {
     let dataListDto = new DataListDto();
     dataListDto.data = [];//new Array<DataDto>();
@@ -322,6 +324,7 @@ describe('CompanionDBService Testing Set', () => {
     //Verify that all the data has been saved.
     done();
   });
+  */
 
   it('The READ function returns the data requested.', async (done) => {
     //The "dataDto_Test_One" has been saved before.
@@ -342,6 +345,7 @@ describe('CompanionDBService Testing Set', () => {
 
   //FIXME: Should be tested the READBULK with non existing hashes?
 
+  /*
   it('The READBULK function returns all data requested.', async (done) => {
     //NOTE: Saved in a test before.
     let dataListDto = new DataListDto();
@@ -354,6 +358,7 @@ describe('CompanionDBService Testing Set', () => {
 
     done();
   });
+  */
 
   it('The DELETE function returns true and deletes the data requested.', async (done) => {
     let deleted = await service.delete(authorisedReaders_Test_One.hash, dataDto_Test_One.dataHash);
@@ -367,6 +372,7 @@ describe('CompanionDBService Testing Set', () => {
     done();
   });
 
+  /*
   it('The DELETEBULK function returns true and deletes all data requested.', async (done) => {
     //NOTE: Saved in a test before.
     let dataListDto = new DataListDto();
@@ -388,4 +394,6 @@ describe('CompanionDBService Testing Set', () => {
 
     done();
   });
+  */
+ 
 });

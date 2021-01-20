@@ -19,4 +19,7 @@ export class KeyPair {
   @Column()
   mnemonic!: string;
 
+  @Column()
+  blockchainOwnerKeys: any
+
 }

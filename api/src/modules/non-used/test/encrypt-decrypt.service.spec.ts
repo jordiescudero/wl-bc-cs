@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { EncryptDecryptService } from '../encrypt-decrypt/encrypt-decrypt.service';
-import { EncryptDecryptResponseDto } from '../encrypt-decrypt/model/dto/encrypt-decrypt-response.dto';
-import { ResponseCryptoDto } from '../encrypt-decrypt/model/dto/response-crypto.dto';
-import { KeyPair } from '../encrypt-decrypt/model/entity/keyPair.entity';
+import { EncryptDecryptService } from '../../encrypt-decrypt/encrypt-decrypt.service';
+import { EncryptDecryptResponseDto } from '../../encrypt-decrypt/model/dto/encrypt-decrypt-response.dto';
+import { ResponseCryptoDto } from '../../encrypt-decrypt/model/dto/response-crypto.dto';
+import { KeyPair } from '../../encrypt-decrypt/model/entity/keyPair.entity';
 import DbModule from './db-test.module';
 import { Connection } from 'typeorm';
 
@@ -113,6 +113,8 @@ describe('EncryptDecryptService', () => {
     done();
   });
 
+  /*
+
   it('should return a  mnemonic required error', async (done) => {
     let encryptDecryptResponseDto = await service.enroll(userHash, null);
     expect(encryptDecryptResponseDto).toEqual(requiredMnemonicResponse);
@@ -146,6 +148,7 @@ describe('EncryptDecryptService', () => {
     done();
   });
 
+  */
   it('should disenroll and return expected message', async (done) => {
     let encryptDecryptResponseDto = await service.disenroll(userHash);
     expect(encryptDecryptResponseDto).toEqual(correctDisenroll);
@@ -164,8 +167,10 @@ describe('EncryptDecryptService', () => {
   });
 
   it('encrypt/decrypt recurent encryption', async (done) => {
+    /*
     let mnemonicAux = await service.enroll(userHashe2e, correctMnemonic.mnemonic);
     expect(mnemonicAux).toEqual(correctMnemonic);
+    */
 
     let responseCryptoDtoEncrypt = await service.encrypt(userHashe2e, correctDecryption.text);
     let responseCryptoDtoDecrypt = await service.decrypt(userHashe2e, responseCryptoDtoEncrypt.text)
@@ -188,8 +193,10 @@ describe('EncryptDecryptService', () => {
   });
 
   it('encrypt/decrypt recurent encryption test 2', async (done) => {
+    /*
     let mnemonicAux = await service.enroll(userHashe2e_test2, validMnemonic.mnemonic);
     expect(mnemonicAux).toEqual(validMnemonic);
+    */
 
     let responseCryptoDtoEncrypt = await service.encrypt(userHashe2e_test2, correctDecryption.text);
     let responseCryptoDtoDecrypt = await service.decrypt(userHashe2e_test2, responseCryptoDtoEncrypt.text)
@@ -235,8 +242,10 @@ describe('EncryptDecryptService', () => {
 
 
   it('encrypt/decrypt correct', async (done) => {
+    /*
     let mnemonicAux = await service.enroll(userHash, correctMnemonic.mnemonic);
     expect(mnemonicAux).toEqual(correctMnemonic);
+    */
 
     let responseCryptoDtoEncrypt = await service.encrypt(userHash, correctDecryption.text);
     let responseCryptoDtoDecrypt = await service.decrypt(userHash, responseCryptoDtoEncrypt.text);

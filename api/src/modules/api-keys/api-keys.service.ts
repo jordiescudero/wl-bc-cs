@@ -1,14 +1,13 @@
 import { Injectable, NotAcceptableException, UnauthorizedException, Logger } from '@nestjs/common';
 import { ApiKey } from './model/entity/api-key.entity';
-import { MongoRepository } from 'typeorm';
+import { MongoRepository, ObjectID } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ObjectId } from 'mongodb';
+
 import { CreateApiKeyDto } from './model/dto/create-api-key.dto';
 import { UpdateApiKeyDto } from './model/dto/update-api-key.dto';
 import { ResponseApiKeyDto } from './model/dto/response-api-key.dto';
 import { ConfigService } from '@common/config/config.service';
-import * as JSON from '@contracts/ApiKeys.json';
-import * as Web3 from 'web3';
+
 import { ResponseApiKeyListDto } from './model/dto/response-api-key-list.dto';
 
 @Injectable()
@@ -40,7 +39,7 @@ export class ApiKeysService {
   }
 
   async update(owner: string, apiKeyId: string, updateApiKeyDto: UpdateApiKeyDto): Promise<ResponseApiKeyDto> {
-    const result = await this.apiKeysRepository.updateOne({_id: new ObjectId(apiKeyId), owner}, {$set: updateApiKeyDto}, { upsert: true});
+    const result = await this.apiKeysRepository.updateOne({_id: new ObjectID(apiKeyId), owner}, {$set: updateApiKeyDto}, { upsert: true});
     if (result.matchedCount > 0) {
       return await this.findOne(owner, apiKeyId);
     } else {
@@ -50,7 +49,7 @@ export class ApiKeysService {
   }
 
   async enable(owner: string, apiKeyId: string, enable: boolean): Promise<ResponseApiKeyDto> {
-    const result = await this.apiKeysRepository.updateOne({_id: new ObjectId(apiKeyId), owner}, {$set: { active: enable}}, { upsert: true});
+    const result = await this.apiKeysRepository.updateOne({_id: new ObjectID(apiKeyId), owner}, {$set: { active: enable}}, { upsert: true});
     if (result.matchedCount > 0) {
       return await this.findOne(owner, apiKeyId);
     } else {
@@ -60,7 +59,7 @@ export class ApiKeysService {
   }
 
   async delete(owner: string, apiKeyId: string): Promise<boolean> {
-    const result =  await this.apiKeysRepository.deleteOne({_id: new ObjectId(apiKeyId), owner});
+    const result =  await this.apiKeysRepository.deleteOne({_id: new ObjectID(apiKeyId), owner});
     if (result.deletedCount > 0) {
       return true;
     } else {
@@ -74,7 +73,7 @@ export class ApiKeysService {
       where: {
           $and: [
               {
-                _id : new ObjectId(apiKeyId),
+                _id : new ObjectID(apiKeyId),
               },
               {
                 owner,
