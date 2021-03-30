@@ -39,7 +39,7 @@
     "@nestjs/swagger": "^3.1.0",
     "@nestjs/typeorm": "^6.2.0",
     "bip39": "^3.0.3",
-    "class-transformer": "^0.2.3",
+    "class-transformer": "^0.3.1",
     "class-validator": "^0.10.1",
     "cookie-parser": "^1.4.4",
     "cross-env": "^6.0.3",
