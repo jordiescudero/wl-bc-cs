@@ -1,61 +1,51 @@
 import { Injectable } from '@nestjs/common';
 import getAllValuesSample from './getAllValues.response.json';
 import axios from "axios";
+import { ConfigService } from '@common/config/config.service';
 
 @Injectable()
 export class BlockchainMiddlewareService {
 
-    private cbURL = "http://147.102.19.185:5555/api/";
+    private cbURL = this.configService.blockchainMiddlewareAPIUrl;
 
     private getAllValuesURL = this.cbURL + "getAllValues"; //GET
     private createNewAccountURL = this.cbURL + "createNewAccount"; //GET
     private insertNewValueURL = this.cbURL + "insertNewValue"; //GET
 
-    private headers =  {
-        headers: { 'content-type': 'application/x-www-form-urlencoded',  'accept': 'application/json'}
+    private postHeaders =  {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded',  'accept': 'application/json'}
     };
 
-    constructor() {
+    private getHeaders =  {
+        headers: { 'accept': 'application/json' }
+    };
 
-    }
+    constructor(
+        private readonly configService: ConfigService,
+    ) {}
 
     async createNewAccount(userName: string, password: any) {
-        const newAccountParams = {
-            userName,
-            password
-        }
-
-        // return axios.post( this.createNewAccountURL, newAccountParams, this.headers );
-
-        return {
-            userName,
-            password,
-            publicKey: "0x4b88f711f59c84964036c6bf3939273b14aa8f491577e88958438adfbf954c30",
-            privateKey: "0xD98931daB81f9bEA796E9AaEA377D222B057bF7B"
-        }
-    }
-
-    async insertNewValue(publicKey: string, data: any ) {
-        const newValueParams = {
-            publicKey,
-            value: data
-        }
-
-        // return axios.post( this.insertNewValueURL, newValueParams, this.headers );
-
-        return {
-            message: "Successfully inserted value",
-            value: data,
-            owner: publicKey
-        }
         
+        const newAccountParams = new URLSearchParams();
+        newAccountParams.append('userName', userName);
+        newAccountParams.append('password', password);
+
+        return axios.post( this.createNewAccountURL, newAccountParams, this.postHeaders );
+
+    }
+    
+    async insertNewValue(publicKey: string, data: any ) {
+
+        const newValueParams = new URLSearchParams();
+        newValueParams.append('publicKey', publicKey);
+        newValueParams.append('value', data);
+
+        return axios.post( this.insertNewValueURL, newValueParams, this.postHeaders );
+
     }
     
     async getAllValues() {
-     
-        // return axios.get( this.getAllValuesURL, this.headers );
-
-        return getAllValuesSample;
+        return axios.get( this.getAllValuesURL, this.getHeaders );
     }
 
 

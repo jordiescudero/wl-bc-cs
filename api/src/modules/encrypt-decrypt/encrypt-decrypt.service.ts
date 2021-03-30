@@ -22,7 +22,7 @@ export class EncryptDecryptService {
      * @param ownerHash 
      * @param mnemonic 
      */
-    async enroll(ownerHash: string, mnemonic: string, blockchainOwnerKeys): Promise<EncryptDecryptResponseDto> {
+    async enroll(ownerHash: string, mnemonic: string, blockchainOwnerKeys: object): Promise<EncryptDecryptResponseDto> {
         const responseDto = new EncryptDecryptResponseDto();
         responseDto.error = false;
         responseDto.mnemonic = mnemonic;
@@ -94,19 +94,19 @@ export class EncryptDecryptService {
      * - Same data:       if NOT enrolled member
      * 
      * @param hash 
-     * @param text 
+     * @param data 
      */
-    async encrypt(hash: string, text: string): Promise<ResponseCryptoDto> {
+    async encrypt(hash: string, data: string): Promise<ResponseCryptoDto> {
         // Get the "keypair" for the given hash.
         const keyPair = await this.keyPairRepository.findOne({hash: hash});
         if (keyPair==undefined || keyPair==null || keyPair.hash!=hash) {
-            return {text};
+            return { text: data };
         }
 
         // Encrypt the "text" with the "public key"
         const encrypted: Encrypted = await EthCrypto.encryptWithPublicKey(
                 HDKey.fromExtendedKey(keyPair.privateKey).publicKey.toString('hex'),
-                text // message
+                data // message
             );
         
         const encryptedString = EthCrypto.cipher.stringify(encrypted);
@@ -123,18 +123,18 @@ export class EncryptDecryptService {
      * - Same data:       if NOT enrolled member
      * 
      * @param hash 
-     * @param text 
+     * @param data 
      */
-    async decrypt(hash: string, text: string): Promise<ResponseCryptoDto> {
+    async decrypt(hash: string, data: string): Promise<ResponseCryptoDto> {
         // Get the "keypair" for the given hash.
         const keyPair = await this.keyPairRepository.findOne({hash: hash});
         if (keyPair==undefined || keyPair==null || keyPair.hash!=hash) {
-            return {text};
+            return { text: data };
         }        
         
         const message = await EthCrypto.decryptWithPrivateKey(
             HDKey.fromExtendedKey(keyPair.privateKey).privateKey.toString('hex'), // privateKey
-            EthCrypto.cipher.parse(text) // encrypted-data
+            EthCrypto.cipher.parse(data) // encrypted-data
         );
 
         // Return the "text" decrypted.

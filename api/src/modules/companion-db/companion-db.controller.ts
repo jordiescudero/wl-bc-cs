@@ -18,46 +18,78 @@ import {
   ApiProduces,
   ApiOkResponse,
 } from '@nestjs/swagger';
-import { ReaderDto } from './model/dto/reader.dto';
 import { DataDto } from './model/dto/data.dto';
-import { DataListDto } from './model/dto/data-list.dto';
 import { User } from '@common/decorators/user.decorator';
-import { Roles } from '@common/decorators/roles.decorator';
-import { Data } from './model/entity/data.entity';
 import { EncryptDecryptResponseDto } from '../encrypt-decrypt/model/dto/encrypt-decrypt-response.dto';
+import { OnlyDataDto } from './model/dto/only-data.dto';
+import * as bip39 from 'bip39';
+import { KeyPair } from '@modules/encrypt-decrypt/model/entity/keyPair.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { hash } from 'eth-crypto';
+import { MongoRepository } from 'typeorm';
+import { ResponseDataArrayDto } from './model/dto/response-data-array.dto';
 // import * as i18n from 'i18n';
 
 @Controller('companionDB')
 export class CompanionDBController {
   private log = new Logger('CompanionDBController', true);
 
-  constructor(private readonly companionDBService: CompanionDBService) {}
+  constructor(
+    private readonly companionDBService: CompanionDBService,
+    @InjectRepository(KeyPair)
+    private readonly keyPairRepository: MongoRepository<KeyPair>,
+  ) {}
 
   /**
    * 
    * @param userId 
    * @param mnemonic 
    */
-  @Post('enrol/:hash')
+  @Post('enroll/:hash')
   // @Roles('user')
   // @ApiBearerAuth()
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Successful Enrollement', type: EncryptDecryptResponseDto  })
-  @ApiConsumes('application/json', 'application/x-www-form-urlencoded')
+  @ApiConsumes('application/json')
   @ApiProduces('application/json')
   @Header('Content-Type', 'application/json')
-  async enrol(
+  async enroll(
     @User('id') userId: string,
-    @Param('hash') hash: string,
-    @Body('mnemonic') mnemonic: string
+    @Param('hash') ownerHash: string,
+    @Body() body: { mnemonic: string }
   ): Promise<EncryptDecryptResponseDto> {
-    return await this.companionDBService.enroll(hash, mnemonic);
+
+    const responseDto = new EncryptDecryptResponseDto();    
+          
+    if(!body.mnemonic) {
+        responseDto.error = true;
+        responseDto.text = "Mnemonic required";
+        responseDto.mnemonic = '';
+        return responseDto;
+        
+    } else {
+      const keyPair = await this.keyPairRepository.findOne({hash: ownerHash});
+      if(!!keyPair) {
+          responseDto.error = true;
+          responseDto.text = "Already enrolled";
+          responseDto.mnemonic = '';
+          return responseDto;
+      } else {
+        if(!bip39.validateMnemonic(body.mnemonic)) {
+            responseDto.error = true;
+            responseDto.text = "Invalid mnemonic";
+            return responseDto;
+        } else {
+          return this.companionDBService.enroll(ownerHash, body.mnemonic);
+        }
+      }
+    }
   }
 
   /**
    * 
    * @param userId 
    */
-  @Delete('disenrol/:hash')
+  @Delete('disenroll/:hash')
   // @Roles('user')
   // @ApiBearerAuth()
   @ApiResponse({ status: HttpStatus.OK, description: 'Successful Disenrollement', type: EncryptDecryptResponseDto  })
@@ -65,7 +97,7 @@ export class CompanionDBController {
     @User('id') userId: string,
     @Param('hash') hash: string,
   ): Promise<EncryptDecryptResponseDto> {
-    return await this.companionDBService.disenroll(hash);
+    return this.companionDBService.disenroll(hash);
   }
 
   /**
@@ -73,7 +105,7 @@ export class CompanionDBController {
    * @param userId 
    * @param dataId 
    */
-  @Get('read/:ownerHash/:dataId')
+  @Get('read/:ownerHash/:dataHash')
   // @Roles('user')
   // @ApiBearerAuth()
   @ApiOkResponse({ type: DataDto })
@@ -81,7 +113,22 @@ export class CompanionDBController {
     @Param('ownerHash') ownerHash: string,
     @Param('dataHash') dataHash: string,
   ): Promise<DataDto> {
-    return await this.companionDBService.read(ownerHash, dataHash);
+    return this.companionDBService.read(ownerHash, dataHash);
+  }
+
+    /**
+   * 
+   * @param userId 
+   * @param dataId 
+   */
+  @Get('readAll/:ownerHash')
+  // @Roles('user')
+  // @ApiBearerAuth()
+  @ApiOkResponse({ type: ResponseDataArrayDto })
+  async readAll(
+    @Param('ownerHash') ownerHash: string
+  ): Promise<ResponseDataArrayDto> {
+    return this.companionDBService.readAll(ownerHash);
   }
 
   /**
@@ -95,9 +142,9 @@ export class CompanionDBController {
   @ApiOkResponse({ type: Object })
   async save(
     @Param('ownerHash') ownerHash: string,
-    @Body() data: DataDto
+    @Body() data: OnlyDataDto
   ): Promise<string> {
-     return await this.companionDBService.save(ownerHash, data);     
+     return this.companionDBService.save(ownerHash, data);
   }
   
   /**
@@ -112,54 +159,66 @@ export class CompanionDBController {
     @Param('ownerHash') ownerHash: string,
     @Param('dataHash') dataHash: string,
   ): Promise<any> {
-    return await this.companionDBService.delete(ownerHash, dataHash);
+    return this.companionDBService.delete(ownerHash, dataHash);
+  }
+
+    /**
+   * 
+   * @param userId 
+   * @param dataId 
+   */
+  @Delete('deleteAll/:hash')
+  // @Roles('user')
+  // @ApiBearerAuth()
+  async deleteAll(
+    @Param('ownerHash') ownerHash: string
+  ): Promise<any> {
+    return this.companionDBService.deleteAll(ownerHash);
   }
 
 
-  /*
-
-  @Post('authorise/:hash')
-  @Roles('user')
+  @Post('authorise/:ownerHash/:readerHash')
+  // @Roles('user')
   // @ApiBearerAuth()
   async authorise(
-    @User('id') userId: string,
-    @Param('hash') hash: string,
-    @Body() readerDto: ReaderDto,
+    //@User('id') userId: string,
+    @Param('ownerHash') ownerHash: string,
+    @Param('readerHash') readerHash: string,
   ) {
-    return await this.companionDBService.authorise(hash, readerDto.authHash);
+    return this.companionDBService.authorise(ownerHash, readerHash);
   }
 
-  @Delete('deauthorise/:hash')
-  @Roles('user')
+  @Delete('deauthorise/:ownerHash/:readerHash')
+  // @Roles('user')
   // @ApiBearerAuth()
   async deauthorise(
-    @User('id') userId: string,
-    @Param('hash') hash: string,
-    @Body() readerDto: ReaderDto,
+    //@User('id') userId: string,
+    @Param('ownerHash') ownerHash: string,
+    @Param('readerHash') readerHash: string,
   ) {
-    return await this.companionDBService.deauthorise(hash, readerDto.authHash);
+    return this.companionDBService.deauthorise(ownerHash, readerHash);
   }
 
-  @Post('requestAuthorisation/:dataHash')
-  @Roles('user')
+  @Post('requestAuthorisation/:dataHash/:readerHash')
+  // @Roles('user')
   // @ApiBearerAuth()
   async requestAuthorisation(
-    @User('id') userId: string,
+    //@User('id') userId: string,
     @Param('dataHash') dataHash: string,
-    @Body() readerDto: ReaderDto,
+    @Param('readerHash') readerHash: string,
   ) {
-    return await this.companionDBService.requestAuthorisation(dataHash, readerDto.authHash);
+    return await this.companionDBService.requestAuthorisation(dataHash, readerHash);
   }
 
-  @Post('approveAuthorisation/:dataHash')
-  @Roles('user')
+  @Post('approveAuthorisation/:dataHash/:readerHash')
+  // @Roles('user')
   // @ApiBearerAuth()
   async approveAuthorisation(
-    @User('id') userId: string,
+    //@User('id') userId: string,
     @Param('dataHash') dataHash: string,
-    @Body() readerDto: ReaderDto,
+    @Param('readerHash') readerHash: string,
   ) {
-    return await this.companionDBService.approveAuthorisation(dataHash, readerDto.authHash);
+    return this.companionDBService.approveAuthorisation(dataHash, readerHash);
   }
-*/
+
 }

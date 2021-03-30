@@ -119,4 +119,8 @@ export class ConfigService {
     return this.envConfig.JWT_SECRET;
   }
 
+  public get blockchainMiddlewareAPIUrl() {
+    return this.envConfig.BLOCKCHAIN_MIDDLEWARE_API_URL;
+  }
+
 }

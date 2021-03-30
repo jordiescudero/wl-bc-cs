@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import * as AuthorisationContractJson from '../smartcontracts/authorisation/json/Authorisation.json';
-//import * as Web3 from 'web3';
 import Web3 from 'web3';
-const HDWalletProvider = require('truffle-hdwallet-provider');
+//const HDWalletProvider = require('truffle-hdwallet-provider');
+import HDWalletProvider from 'truffle-hdwallet-provider';
 import { ConfigService } from '@common/config/config.service';
 
 const GAS = 9999999;
@@ -25,12 +25,14 @@ export class Web3Service {
     this.url = this.configService.get('ALASTRIA_RPC_URL');
     this.network = this.configService.get('ALASTRIA_NETWORK');
 
-    this._initContext(this.mnemonic);
+    //this._initContext(this.mnemonic);
 
     this._eventListener();
   }
 
   _initContext(mnemonic: string) {
+    console.log(mnemonic);
+    console.log(this.url);
     this.hdprovider = new HDWalletProvider(mnemonic, this.url);
     this.web3 = new Web3(this.hdprovider);
     this.address = this.hdprovider.getAddress(0);
